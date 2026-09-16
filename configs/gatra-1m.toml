@@ -3,7 +3,7 @@ seed = 1337
 device = "auto"
 
 [data]
-path = "data/sample.jsonl"
+path = "data/culturax-id.jsonl"
 val_ratio = 0.1
 
 [model]

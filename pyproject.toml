@@ -12,11 +12,13 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.3.0"]
+data = ["datasets>=3.0.0", "huggingface-hub>=0.26.0"]
 
 [project.scripts]
 gatra-train = "gatra.train:main"
 gatra-continue = "gatra.continue_train:main"
 gatra-generate = "gatra.generate:main"
+gatra-prepare = "gatra.prepare:main"
 
 [build-system]
 requires = ["hatchling"]

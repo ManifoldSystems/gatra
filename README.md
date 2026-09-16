@@ -25,6 +25,25 @@ uv run gatra-train --config configs/gatra-1m.toml --device mps
 
 Install the matching PyTorch wheel first: CUDA from `pytorch-cu128`, ROCm from `pytorch-rocm`, MPS/CPU from the default macOS/CPU build.
 
+## Data
+
+CulturaX Indonesian subset is config `id` (~23M docs, ~12B tokens). Do not download the full split.
+
+```bash
+uv sync --extra data
+huggingface-cli login
+uv run gatra-prepare --lang id --limit 5000 --out data/culturax-id.jsonl
+```
+
+Then point a recipe at the file:
+
+```toml
+[data]
+path = "data/culturax-id.jsonl"
+```
+
+`--limit 5000` is enough to stop the 20-sentence overfitting. Raise later for Gatra-10M+.
+
 ## Train
 
 ```bash
