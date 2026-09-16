@@ -1,0 +1,32 @@
+name = "gatra-smoke"
+seed = 1337
+device = "auto"
+
+[data]
+path = "data/sample.jsonl"
+val_ratio = 0.2
+
+[model]
+n_embd = 64
+n_head = 4
+n_layer = 2
+block_size = 32
+dropout = 0.0
+
+[train]
+batch_size = 4
+max_iters = 20
+eval_interval = 10
+eval_iters = 2
+learning_rate = 3e-4
+warmup_iters = 2
+out_dir = "checkpoints"
+sample_tokens = 32
+sample_prompt_chars = 16
+sample_count = 2
+
+[generate]
+max_new_tokens = 64
+temperature = 0.8
+top_k = 20
+top_p = 0.9

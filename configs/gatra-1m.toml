@@ -1,0 +1,35 @@
+name = "gatra-1m"
+seed = 1337
+device = "auto"
+
+[data]
+path = "data/sample.jsonl"
+val_ratio = 0.1
+
+[model]
+n_embd = 128
+n_head = 4
+n_layer = 4
+block_size = 128
+dropout = 0.1
+
+[train]
+batch_size = 16
+max_iters = 2000
+eval_interval = 100
+eval_iters = 20
+learning_rate = 3e-4
+warmup_iters = 50
+weight_decay = 0.1
+grad_clip = 1.0
+max_time = "30m"
+out_dir = "checkpoints"
+sample_tokens = 80
+sample_prompt_chars = 24
+sample_count = 4
+
+[generate]
+max_new_tokens = 200
+temperature = 0.8
+top_k = 50
+top_p = 0.9
