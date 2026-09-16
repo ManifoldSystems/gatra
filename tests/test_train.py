@@ -7,7 +7,15 @@ from gatra.data import TokenDataset
 from gatra.generate import generate_text
 from gatra.model import Gatra
 from gatra.tokenizer import ByteTokenizer
-from gatra.train import find_checkpoint, is_sample_step, sample_generation, sample_interval, sample_prompt, train
+from gatra.train import (
+    _restore_rng,
+    find_checkpoint,
+    is_sample_step,
+    sample_generation,
+    sample_interval,
+    sample_prompt,
+    train,
+)
 
 
 def _smoke_config(tmp_path: Path, max_iters: int = 4):
@@ -47,6 +55,13 @@ def test_sample_prompt_and_generation(tmp_path: Path) -> None:
     sampled_prompt, text = sample_generation(model, dataset, config, torch.device("cpu"))
     assert sampled_prompt
     assert len(text) >= len(sampled_prompt)
+
+
+def test_restore_rng_from_non_cpu_tensor() -> None:
+    original = torch.get_rng_state()
+    moved = original.to(dtype=torch.int64)
+    _restore_rng({"rng": {"torch": moved}}, torch.device("cpu"))
+    torch.set_rng_state(original)
 
 
 def test_sample_quarters() -> None:

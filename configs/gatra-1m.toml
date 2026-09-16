@@ -3,8 +3,12 @@ seed = 1337
 device = "auto"
 
 [data]
-path = "data/culturax-id.jsonl"
+paths = [
+    "data/sample.jsonl",
+    "data/culturax-id.jsonl",
+]
 val_ratio = 0.1
+shuffle_docs = true
 
 [model]
 n_embd = 128

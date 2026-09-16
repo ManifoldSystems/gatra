@@ -101,10 +101,17 @@ def estimate_loss(model: Gatra, dataset: TokenDataset, config: Config, device: t
 
 
 def _rng_state(device: torch.device) -> dict:
-    state = {"torch": torch.get_rng_state()}
+    state = {"torch": torch.get_rng_state().cpu()}
     if device.type == "cuda" and torch.cuda.is_available():
-        state["cuda"] = torch.cuda.get_rng_state_all()
+        state["cuda"] = [item.cpu() for item in torch.cuda.get_rng_state_all()]
+    mps_get = getattr(getattr(torch, "mps", None), "get_rng_state", None)
+    if device.type == "mps" and mps_get is not None:
+        state["mps"] = mps_get().cpu()
     return state
+
+
+def _cpu_byte_tensor(value: torch.Tensor) -> torch.Tensor:
+    return value.detach().to(device="cpu", dtype=torch.uint8).contiguous()
 
 
 def _restore_rng(payload: dict, device: torch.device) -> None:
@@ -112,9 +119,16 @@ def _restore_rng(payload: dict, device: torch.device) -> None:
     if not rng:
         return
     if "torch" in rng:
-        torch.set_rng_state(rng["torch"])
+        torch.set_rng_state(_cpu_byte_tensor(rng["torch"]))
     if device.type == "cuda" and "cuda" in rng and torch.cuda.is_available():
-        torch.cuda.set_rng_state_all(rng["cuda"])
+        states = rng["cuda"]
+        if isinstance(states, list):
+            torch.cuda.set_rng_state_all([_cpu_byte_tensor(item) for item in states])
+        else:
+            torch.cuda.set_rng_state(_cpu_byte_tensor(states))
+    mps_set = getattr(getattr(torch, "mps", None), "set_rng_state", None)
+    if device.type == "mps" and "mps" in rng and mps_set is not None:
+        mps_set(_cpu_byte_tensor(rng["mps"]))
 
 
 def save_checkpoint(
@@ -193,10 +207,13 @@ def train(config: Config, resume: Path | None = None, extra_iters: int | None = 
     best = out_dir / "best.pt"
     step = start_step
 
+    mix = ", ".join(f"{name}={count}" for name, count in dataset.source_counts.items())
     print(
         f"{config.name}: {model.param_count() / 1e6:.3f}M params, device={info}, "
         f"train_tokens={len(dataset.train_ids)}, val_tokens={len(dataset.val_ids)}"
     )
+    if mix:
+        print(f"data mix: {mix}")
 
     if start_step >= config.train.max_iters:
         print(

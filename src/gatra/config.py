@@ -18,7 +18,15 @@ def parse_duration(value: str | None) -> float | None:
 @dataclass
 class DataConfig:
     path: str = "data/sample.jsonl"
+    paths: list[str] = field(default_factory=list)
     val_ratio: float = 0.1
+    shuffle_docs: bool = True
+    doc_separator: str = "\n"
+
+    def sources(self) -> list[str]:
+        if self.paths:
+            return list(self.paths)
+        return [self.path] if self.path else []
 
 
 @dataclass
@@ -108,12 +116,22 @@ def load_config(path: str | Path) -> Config:
         generate=_section(GenerateConfig, raw.get("generate", {})),
         source=config_path,
     )
-    data_path = Path(config.data.path)
-    if not data_path.is_file():
-        alt = config_path.parent.parent / data_path
-        if alt.is_file():
-            config.data.path = str(alt)
+    root = config_path.parent.parent
+    if config.data.paths:
+        config.data.paths = [_resolve_existing(item, root) for item in config.data.paths]
+    else:
+        config.data.path = _resolve_existing(config.data.path, root)
     return config
+
+
+def _resolve_existing(value: str, root: Path) -> str:
+    path = Path(value)
+    if path.exists() or "*" in value or "?" in value or "[" in value:
+        return value
+    alt = root / path
+    if alt.exists() or any(alt.parent.glob(alt.name)):
+        return str(alt)
+    return value
 
 
 def config_from_dict(raw: dict) -> Config:

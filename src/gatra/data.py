@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import random
+from collections import defaultdict
 from pathlib import Path
 
 import torch
@@ -9,10 +11,27 @@ from gatra.config import Config
 from gatra.tokenizer import ByteTokenizer
 
 
-def load_texts(path: str | Path) -> list[str]:
-    file_path = Path(path)
-    if not file_path.is_file():
-        raise FileNotFoundError(f"dataset not found: {file_path}")
+def resolve_data_files(config: Config) -> list[Path]:
+    root = config.source.parent.parent if config.source else Path.cwd()
+    found: list[Path] = []
+    seen: set[Path] = set()
+    for raw in config.data.sources():
+        path = Path(raw)
+        matches = sorted(path.parent.glob(path.name)) if any(ch in path.name for ch in "*?[") else [path]
+        if len(matches) == 1 and not matches[0].exists():
+            alt = root / path
+            matches = sorted(alt.parent.glob(alt.name)) if any(ch in path.name for ch in "*?[") else [alt]
+        files = [item.resolve() for item in matches if item.is_file()]
+        if not files:
+            raise FileNotFoundError(f"dataset not found: {raw}")
+        for item in files:
+            if item not in seen:
+                seen.add(item)
+                found.append(item)
+    return found
+
+
+def load_texts_from_file(file_path: Path) -> list[str]:
     if file_path.suffix == ".jsonl":
         records: list[str] = []
         with file_path.open(encoding="utf-8") as handle:
@@ -28,12 +47,25 @@ def load_texts(path: str | Path) -> list[str]:
     return [file_path.read_text(encoding="utf-8")]
 
 
+def load_corpus(config: Config) -> tuple[list[str], dict[str, int]]:
+    counts: dict[str, int] = defaultdict(int)
+    texts: list[str] = []
+    for file_path in resolve_data_files(config):
+        docs = load_texts_from_file(file_path)
+        counts[file_path.name] += len(docs)
+        texts.extend(docs)
+    if config.data.shuffle_docs:
+        rng = random.Random(config.seed)
+        rng.shuffle(texts)
+    return texts, dict(counts)
+
+
 class TokenDataset:
     def __init__(self, config: Config, tokenizer: ByteTokenizer | None = None) -> None:
         self.config = config
         self.tokenizer = tokenizer or ByteTokenizer()
-        self.texts = load_texts(config.data.path)
-        encoded = self.tokenizer.encode("\n".join(self.texts))
+        self.texts, self.source_counts = load_corpus(config)
+        encoded = self.tokenizer.encode(config.data.doc_separator.join(self.texts))
         if len(encoded) <= config.model.block_size + 1:
             raise ValueError(
                 f"dataset too short: {len(encoded)} tokens, need > {config.model.block_size + 1}"

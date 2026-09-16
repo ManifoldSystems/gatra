@@ -35,12 +35,18 @@ huggingface-cli login
 uv run gatra-prepare --lang id --limit 5000 --out data/culturax-id.jsonl
 ```
 
-Then point a recipe at the file:
+Mix jsonl files like puzzle pieces. Add Wikipedia later without changing the trainer:
 
 ```toml
 [data]
-path = "data/culturax-id.jsonl"
+paths = [
+    "data/culturax-id.jsonl",
+    "data/wiki-id.jsonl",
+]
+shuffle_docs = true
 ```
+
+Globs work too: `paths = ["data/*.jsonl"]`. Documents are shuffled, then split train/val.
 
 `--limit 5000` is enough to stop the 20-sentence overfitting. Raise later for Gatra-10M+.
 
