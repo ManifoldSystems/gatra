@@ -3,7 +3,7 @@ name = "gatra"
 version = "0.1.0"
 description = "Indonesia-first small language model from first principles"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 license = { file = "LICENSE" }
 dependencies = [
     "numpy>=2.2.0",

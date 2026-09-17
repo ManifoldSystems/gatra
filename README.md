@@ -25,6 +25,17 @@ uv run gatra-train --config configs/gatra-1m.toml --device mps
 
 Install the matching PyTorch wheel first: CUDA from `pytorch-cu128`, ROCm from `pytorch-rocm`, MPS/CPU from the default macOS/CPU build.
 
+## Colab T4
+
+Use `notebooks/colab_train.ipynb`. Runtime → GPU (T4). Clone the repo, `uv sync --extra data`, write checkpoints to Drive:
+
+```bash
+uv run gatra-train --config configs/gatra-10m.toml --device cuda --out-dir /content/drive/MyDrive/gatra/checkpoints --max-time 50m
+uv run gatra-continue --config configs/gatra-10m.toml --device cuda --out-dir /content/drive/MyDrive/gatra/checkpoints --extra-iters 2000
+```
+
+Colab sessions drop. Keep `--max-time` under the session limit and resume from Drive. T4 is the right box for Gatra-10M / 100M study runs, not for debugging the trainer.
+
 ## Data
 
 CulturaX Indonesian subset is config `id` (~23M docs, ~12B tokens). Do not download the full split.
