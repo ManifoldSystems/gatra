@@ -3,20 +3,23 @@ seed = 1337
 device = "auto"
 
 [data]
-# Missing files fail fast; drop lines for sources you have not prepared.
-paths = [
-    "data/sample.jsonl",
-    "data/gatra-identity.jsonl",
-    "data/fineweb2hq-id.jsonl",
-    "data/wiki-id.jsonl",
-    "data/culturax-id.jsonl",
-    "data/cendol-wikihow-id.jsonl",
-    "data/cendol-puisi-id.jsonl",
-    "data/aya-id.jsonl",
-]
+# Build once with `gatra-build --config configs/gatra-10m.toml`; training reads the bins.
+bin_dir = "data/bin/gatra-10m"
 val_ratio = 0.1
-shuffle_docs = true
 dedup = true
+
+# path = weight. Earlier sources win dedup ties. Missing files fail the build.
+[data.mix]
+"data/gatra-identity.jsonl" = 20.0
+"data/sample.jsonl" = 1.0
+"data/wiki-id.jsonl" = 1.5
+"data/fineweb2hq-id.jsonl" = 1.0
+"data/cendol-wikihow-id.jsonl" = 1.0
+"data/newspapers-2018-id.jsonl" = 1.0
+"data/kopi-news-id.jsonl" = 1.0
+"data/aya-id.jsonl" = 2.0
+"data/culturax-id.jsonl" = 0.5
+"data/cendol-puisi-id.jsonl" = 0.5
 
 [model]
 n_embd = 384

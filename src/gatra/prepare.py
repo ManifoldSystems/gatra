@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import argparse
+import gzip
 import hashlib
+import io
 import json
 import os
 import sys
+import tarfile
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -18,8 +22,12 @@ class Source:
     fields: tuple[str, ...] = ("text",)
     filters: tuple[tuple, ...] | None = None
     shuffle: bool = False
+    # raw files (hf:// or https://) read directly, for datasets whose loader scripts
+    # `datasets` no longer runs (SEACrowd). Formats: .jsonl.zst, .jsonl.gz, .tgz of json.
+    files: tuple[str, ...] = ()
 
 
+KOPI_NEWS_YEARS = range(2022, 2015, -1)
 # Indonesian subsets. FineWeb2-HQ ships per-doc embeddings; stream only the text column.
 # Instruction sets become plain text (prompt, blank line, answer) and are filtered to
 # Indonesian at the parquet level. Cendol keeps only subsets not already covered by wiki
@@ -54,6 +62,25 @@ SOURCES = {
         columns=("input", "output", "subset_name"),
         fields=("input", "output"),
         filters=(("subset_name", "==", "indo_puisi"),),
+    ),
+    # SEACrowd kopi_cc_news: Indonesian CC-News by year, newest first. CC0.
+    "kopi-news": Source(
+        "munggok/KoPI-CC_News",
+        "",
+        "data/kopi-news-id.jsonl",
+        files=tuple(
+            f"hf://datasets/munggok/KoPI-CC_News/data/cc_news_{year}_id.jsonl.zst"
+            for year in KOPI_NEWS_YEARS
+        ),
+    ),
+    # SEACrowd id_newspaper_2018: ~500k articles from Indonesian news sites. CC-BY-4.0.
+    # The tar is grouped by site; use --sample-rate to spread a budget across all of them.
+    "newspapers-2018": Source(
+        "indonesian-nlp/id_newspapers_2018",
+        "",
+        "data/newspapers-2018-id.jsonl",
+        fields=("title", "content"),
+        files=("hf://datasets/indonesian-nlp/id_newspapers_2018/newspapers-json.tgz",),
     ),
 }
 DEFAULT_SOURCE = "culturax"
@@ -91,6 +118,14 @@ def load_seen_hashes(paths: list[Path]) -> set[bytes]:
     return seen
 
 
+def keep_sample(text: str, rate: float | None) -> bool:
+    """Deterministic per-doc coin flip, salted so it is independent of the train/val split."""
+    if rate is None or rate >= 1.0:
+        return True
+    key = hashlib.blake2b(doc_hash(text), digest_size=8, salt=b"gatra-sample").digest()
+    return int.from_bytes(key, "little") / 2**64 < rate
+
+
 def _row_text(row: dict, fields: tuple[str, ...] = ("text",)) -> str:
     parts = [str(row[name]).strip() for name in fields if row.get(name) is not None]
     return "\n\n".join(part for part in parts if part)
@@ -121,6 +156,36 @@ def iter_rows(
     return rows
 
 
+def _jsonl_rows(handle) -> Iterator[dict]:
+    for line in handle:
+        if line.strip():
+            yield json.loads(line)
+
+
+def iter_file_rows(urls: tuple[str, ...]) -> Iterator[dict]:
+    import fsspec
+
+    for url in urls:
+        print(f"reading {url}")
+        with fsspec.open(url, "rb", block_size=2**20) as raw:
+            if url.endswith(".zst"):
+                import zstandard
+
+                stream = zstandard.ZstdDecompressor().stream_reader(raw)
+                yield from _jsonl_rows(io.TextIOWrapper(stream, encoding="utf-8"))
+            elif url.endswith((".tgz", ".tar.gz")):
+                with tarfile.open(fileobj=raw, mode="r|gz") as archive:
+                    for member in archive:
+                        # skip macOS "._" resource forks packed next to the real files
+                        name = member.name.rsplit("/", 1)[-1]
+                        if member.isfile() and name.endswith(".json") and not name.startswith("._"):
+                            yield json.loads(archive.extractfile(member).read())
+            elif url.endswith(".gz"):
+                yield from _jsonl_rows(gzip.open(raw, "rt", encoding="utf-8"))
+            else:
+                yield from _jsonl_rows(io.TextIOWrapper(raw, encoding="utf-8"))
+
+
 def write_jsonl(
     rows,
     out_path: Path,
@@ -130,18 +195,23 @@ def write_jsonl(
     dedup: bool = True,
     seen: set[bytes] | None = None,
     fields: tuple[str, ...] = ("text",),
+    sample_rate: float | None = None,
 ) -> dict:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     seen = seen if seen is not None else set()
     kept = 0
     skipped = 0
     duplicates = 0
+    sampled_out = 0
     written = 0
     with out_path.open("w", encoding="utf-8") as handle:
         for row in rows:
             text = _row_text(row, fields)
             if len(text) < min_chars:
                 skipped += 1
+                continue
+            if not keep_sample(text, sample_rate):
+                sampled_out += 1
                 continue
             if dedup:
                 key = doc_hash(text)
@@ -164,6 +234,7 @@ def write_jsonl(
         "bytes": written,
         "skipped_short": skipped,
         "duplicates": duplicates,
+        "sampled_out": sampled_out,
     }
 
 
@@ -184,6 +255,11 @@ def parse_args() -> argparse.Namespace:
         help="stop after this much text, e.g. 200M; with the byte tokenizer, bytes = tokens",
     )
     parser.add_argument("--min-chars", type=int, default=DEFAULT_MIN_CHARS)
+    parser.add_argument(
+        "--sample-rate",
+        type=float,
+        help="keep this fraction of docs, chosen by hash; spreads a budget over sorted dumps",
+    )
     parser.add_argument("--no-dedup", dest="dedup", action="store_false")
     parser.add_argument(
         "--dedup-against",
@@ -224,10 +300,13 @@ def main() -> None:
         seen = load_seen_hashes(files)
         print(f"dedup against {len(files)} files ({len(seen)} docs)")
 
-    print(f"streaming {dataset} config={config} split={args.split}")
-    print("gated datasets: accept the license and run `huggingface-cli login` first")
-    stats = write_jsonl(
-        iter_rows(
+    if preset and preset.files:
+        print(f"streaming raw files from {dataset}")
+        rows = iter_file_rows(preset.files)
+    else:
+        print(f"streaming {dataset} config={config} split={args.split}")
+        print("gated datasets: accept the license and run `huggingface-cli login` first")
+        rows = iter_rows(
             dataset,
             config,
             args.split,
@@ -235,7 +314,9 @@ def main() -> None:
             columns=preset.columns if preset else None,
             filters=preset.filters if preset else None,
             shuffle=bool(preset and preset.shuffle),
-        ),
+        )
+    stats = write_jsonl(
+        rows,
         out,
         limit=limit,
         min_chars=args.min_chars,
@@ -243,10 +324,12 @@ def main() -> None:
         dedup=args.dedup,
         seen=seen,
         fields=preset.fields if preset else ("text",),
+        sample_rate=args.sample_rate,
     )
     print(
         f"wrote {stats['kept']} docs ({stats['bytes'] / 1e6:.1f}M bytes) to {stats['path']} "
-        f"(skipped_short={stats['skipped_short']}, duplicates={stats['duplicates']})"
+        f"(skipped_short={stats['skipped_short']}, duplicates={stats['duplicates']}, "
+        f"sampled_out={stats['sampled_out']})"
     )
     # Stopping mid-parquet leaves Arrow reader threads blocked on HTTP; its ThreadPool
     # destructor then waits forever at interpreter exit. The jsonl is closed, so skip teardown.

@@ -19,15 +19,25 @@ def parse_duration(value: str | None) -> float | None:
 class DataConfig:
     path: str = "data/sample.jsonl"
     paths: list[str] = field(default_factory=list)
+    # path -> weight; replaces `paths` when set. 2.0 repeats a source's train docs twice.
+    mix: dict[str, float] = field(default_factory=dict)
+    # prebuilt token bins from `gatra-build`; empty builds the corpus in memory each run
+    bin_dir: str = ""
     val_ratio: float = 0.1
-    shuffle_docs: bool = True
     dedup: bool = True
     doc_separator: str = "\n"
 
     def sources(self) -> list[str]:
+        if self.mix:
+            return list(self.mix)
         if self.paths:
             return list(self.paths)
         return [self.path] if self.path else []
+
+    def weighted_sources(self) -> list[tuple[str, float]]:
+        if self.mix:
+            return [(raw, float(weight)) for raw, weight in self.mix.items()]
+        return [(raw, 1.0) for raw in self.sources()]
 
 
 @dataclass
@@ -118,10 +128,15 @@ def load_config(path: str | Path) -> Config:
         source=config_path,
     )
     root = config_path.parent.parent
-    if config.data.paths:
+    if config.data.mix:
+        config.data.mix = {_resolve_existing(k, root): v for k, v in config.data.mix.items()}
+    elif config.data.paths:
         config.data.paths = [_resolve_existing(item, root) for item in config.data.paths]
     else:
         config.data.path = _resolve_existing(config.data.path, root)
+    if config.data.bin_dir and not Path(config.data.bin_dir).is_absolute():
+        # bins may not exist yet (gatra-build writes them), so anchor to the repo root
+        config.data.bin_dir = str(root / config.data.bin_dir)
     return config
 
 

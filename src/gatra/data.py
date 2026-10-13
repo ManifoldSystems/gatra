@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import io
 import json
-import random
-from collections import defaultdict
+import os
+from collections.abc import Iterator
+from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import BinaryIO
 
 import numpy as np
 import torch
@@ -12,90 +15,214 @@ from gatra.config import Config
 from gatra.prepare import doc_hash
 from gatra.tokenizer import ByteTokenizer
 
+META_FILE = "meta.json"
+TRAIN_FILE = "train.bin"
+VAL_FILE = "val.bin"
 
-def resolve_data_files(config: Config) -> list[Path]:
+
+def _expand(raw: str, root: Path) -> list[Path]:
+    path = Path(raw)
+    is_glob = any(ch in path.name for ch in "*?[")
+    matches = sorted(path.parent.glob(path.name)) if is_glob else [path]
+    if not any(item.exists() for item in matches):
+        alt = root / path
+        matches = sorted(alt.parent.glob(alt.name)) if is_glob else [alt]
+    files = [item.resolve() for item in matches if item.is_file()]
+    if not files:
+        raise FileNotFoundError(f"dataset not found: {raw}")
+    return files
+
+
+def resolve_weighted_files(config: Config) -> list[tuple[Path, float]]:
     root = config.source.parent.parent if config.source else Path.cwd()
-    found: list[Path] = []
+    found: list[tuple[Path, float]] = []
     seen: set[Path] = set()
-    for raw in config.data.sources():
-        path = Path(raw)
-        matches = sorted(path.parent.glob(path.name)) if any(ch in path.name for ch in "*?[") else [path]
-        if len(matches) == 1 and not matches[0].exists():
-            alt = root / path
-            matches = sorted(alt.parent.glob(alt.name)) if any(ch in path.name for ch in "*?[") else [alt]
-        files = [item.resolve() for item in matches if item.is_file()]
-        if not files:
-            raise FileNotFoundError(f"dataset not found: {raw}")
-        for item in files:
+    for raw, weight in config.data.weighted_sources():
+        for item in _expand(raw, root):
             if item not in seen:
                 seen.add(item)
-                found.append(item)
+                found.append((item, weight))
     return found
 
 
-def load_texts_from_file(file_path: Path) -> list[str]:
-    if file_path.suffix == ".jsonl":
-        records: list[str] = []
-        with file_path.open(encoding="utf-8") as handle:
-            for line in handle:
-                if not line.strip():
-                    continue
-                payload = json.loads(line)
-                text = payload.get("text")
-                if not text:
-                    raise ValueError(f"missing text field in {file_path}")
-                records.append(text)
-        return records
-    return [file_path.read_text(encoding="utf-8")]
+def resolve_data_files(config: Config) -> list[Path]:
+    return [path for path, _ in resolve_weighted_files(config)]
 
 
-def load_corpus(config: Config) -> tuple[list[str], dict[str, int], int]:
-    counts: dict[str, int] = defaultdict(int)
-    texts: list[str] = []
+def iter_texts(file_path: Path) -> Iterator[str]:
+    if file_path.suffix != ".jsonl":
+        yield file_path.read_text(encoding="utf-8")
+        return
+    with file_path.open(encoding="utf-8") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            text = json.loads(line).get("text")
+            if not text:
+                raise ValueError(f"missing text field in {file_path}")
+            yield text
+
+
+def _unit(key: bytes, slot: int) -> float:
+    """Deterministic uniform [0, 1) draw from one 8-byte slot of a 16-byte doc hash."""
+    return int.from_bytes(key[slot * 8 : (slot + 1) * 8], "little") / 2**64
+
+
+@dataclass
+class SourceStats:
+    weight: float
+    docs: int = 0
+    duplicates: int = 0
+    train_docs: int = 0
+    val_docs: int = 0
+    train_bytes: int = 0
+    val_bytes: int = 0
+
+
+def write_corpus(config: Config, train_out: BinaryIO, val_out: BinaryIO) -> dict[str, SourceStats]:
+    """Stream every source once: dedup, split by doc hash, repeat train docs by weight.
+
+    The hash split keeps a doc on the same side across rebuilds and gives every source a
+    share of val. Weight 2.5 writes a train doc twice, plus a third time for half of them.
+    Order inside train.bin does not matter: batches sample random windows.
+    """
+    separator = config.data.doc_separator.encode("utf-8")
     seen: set[bytes] = set()
-    duplicates = 0
-    for file_path in resolve_data_files(config):
-        for doc in load_texts_from_file(file_path):
+    stats: dict[str, SourceStats] = {}
+    for path, weight in resolve_weighted_files(config):
+        source = stats[path.name] = SourceStats(weight)
+        if weight <= 0:
+            continue
+        whole, frac = int(weight), weight - int(weight)
+        for text in iter_texts(path):
+            key = doc_hash(text)
             if config.data.dedup:
-                key = doc_hash(doc)
                 if key in seen:
-                    duplicates += 1
+                    source.duplicates += 1
                     continue
                 seen.add(key)
-            counts[file_path.name] += 1
-            texts.append(doc)
-    if config.data.shuffle_docs:
-        rng = random.Random(config.seed)
-        rng.shuffle(texts)
-    return texts, dict(counts), duplicates
+            source.docs += 1
+            data = text.encode("utf-8") + separator
+            if _unit(key, 0) < config.data.val_ratio:
+                val_out.write(data)
+                source.val_docs += 1
+                source.val_bytes += len(data)
+                continue
+            repeats = whole + int(_unit(key, 1) < frac)
+            for _ in range(repeats):
+                train_out.write(data)
+            source.train_docs += repeats
+            source.train_bytes += repeats * len(data)
+    return stats
+
+
+def _meta(config: Config, stats: dict[str, SourceStats], train: int, val: int) -> dict:
+    return {
+        "name": config.name,
+        "tokenizer": "byte",
+        "dtype": "uint8",
+        "doc_separator": config.data.doc_separator,
+        "val_ratio": config.data.val_ratio,
+        "dedup": config.data.dedup,
+        "mix": {Path(raw).name: weight for raw, weight in config.data.weighted_sources()},
+        "train_tokens": train,
+        "val_tokens": val,
+        "sources": {name: asdict(item) for name, item in stats.items()},
+    }
+
+
+def build_bins(config: Config, out_dir: Path) -> dict:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    train_tmp = out_dir / f"{TRAIN_FILE}.tmp"
+    val_tmp = out_dir / f"{VAL_FILE}.tmp"
+    with train_tmp.open("wb") as train_out, val_tmp.open("wb") as val_out:
+        stats = write_corpus(config, train_out, val_out)
+    os.replace(train_tmp, out_dir / TRAIN_FILE)
+    os.replace(val_tmp, out_dir / VAL_FILE)
+    meta = _meta(
+        config,
+        stats,
+        (out_dir / TRAIN_FILE).stat().st_size,
+        (out_dir / VAL_FILE).stat().st_size,
+    )
+    (out_dir / META_FILE).write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
+    return meta
+
+
+def _memmap(path: Path) -> np.ndarray:
+    if path.stat().st_size == 0:
+        return np.zeros(0, dtype=np.uint8)
+    return np.memmap(path, dtype=np.uint8, mode="r")
+
+
+def load_bins(config: Config) -> tuple[np.ndarray, np.ndarray, dict]:
+    bin_dir = Path(config.data.bin_dir)
+    meta_path = bin_dir / META_FILE
+    if not meta_path.is_file():
+        hint = config.source or "<config>"
+        raise FileNotFoundError(f"no token bins in {bin_dir}; run `gatra-build --config {hint}`")
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    if meta.get("tokenizer") != "byte" or meta.get("dtype") != "uint8":
+        raise ValueError(f"{bin_dir} holds {meta.get('tokenizer')} tokens; trainer expects byte")
+    current = {Path(raw).name: weight for raw, weight in config.data.weighted_sources()}
+    if meta.get("mix") != current:
+        print(f"warning: {bin_dir} was built from a different data mix; rerun gatra-build")
+    return _memmap(bin_dir / TRAIN_FILE), _memmap(bin_dir / VAL_FILE), meta
+
+
+def _ensure_val(
+    train: np.ndarray, val: np.ndarray, config: Config
+) -> tuple[np.ndarray, np.ndarray]:
+    """Tiny corpora can hash zero docs into val; fall back to a tail split."""
+    block = config.model.block_size
+    if len(val) > block + 1 and len(train) > block + 1:
+        return train, val
+    ids = np.concatenate([train, val])
+    if len(ids) <= block + 1:
+        raise ValueError(f"dataset too short: {len(ids)} tokens, need > {block + 1}")
+    split = max(block + 2, int(len(ids) * (1.0 - config.data.val_ratio)))
+    split = min(split, len(ids) - (block + 1))
+    return ids[:split], ids[split:]
 
 
 class TokenDataset:
     def __init__(self, config: Config, tokenizer: ByteTokenizer | None = None) -> None:
         self.config = config
         self.tokenizer = tokenizer or ByteTokenizer()
-        self.texts, self.source_counts, self.duplicates = load_corpus(config)
-        joined = config.data.doc_separator.join(self.texts)
-        if isinstance(self.tokenizer, ByteTokenizer):
-            # uint8 keeps 200M byte tokens at 200MB instead of a 1.6GB int64 tensor
-            encoded = torch.from_numpy(np.frombuffer(joined.encode("utf-8"), dtype=np.uint8).copy())
+        if not isinstance(self.tokenizer, ByteTokenizer):
+            raise TypeError("token bins are uint8 bytes; only ByteTokenizer is supported")
+        if config.data.bin_dir:
+            train, val, self.meta = load_bins(config)
         else:
-            encoded = torch.tensor(self.tokenizer.encode(joined), dtype=torch.long)
-        if len(encoded) <= config.model.block_size + 1:
-            raise ValueError(
-                f"dataset too short: {len(encoded)} tokens, need > {config.model.block_size + 1}"
-            )
-        split = max(config.model.block_size + 2, int(len(encoded) * (1.0 - config.data.val_ratio)))
-        split = min(split, len(encoded) - (config.model.block_size + 1))
-        self.train_ids = encoded[:split]
-        self.val_ids = encoded[split:]
+            train_buf, val_buf = io.BytesIO(), io.BytesIO()
+            stats = write_corpus(config, train_buf, val_buf)
+            train = np.frombuffer(train_buf.getvalue(), dtype=np.uint8)
+            val = np.frombuffer(val_buf.getvalue(), dtype=np.uint8)
+            self.meta = _meta(config, stats, len(train), len(val))
+        self.train_ids, self.val_ids = _ensure_val(train, val, config)
+        sources = self.meta["sources"].items()
+        self.source_counts = {name: item["docs"] for name, item in sources}
+        self.duplicates = sum(item["duplicates"] for _, item in sources)
 
     def get_batch(self, split: str, device: torch.device) -> tuple[torch.Tensor, torch.Tensor]:
         source = self.train_ids if split == "train" else self.val_ids
         block = self.config.model.block_size
         if len(source) <= block:
             raise ValueError(f"{split} split too short: {len(source)} tokens")
-        ix = torch.randint(len(source) - block, (self.config.train.batch_size,))
-        x = torch.stack([source[i : i + block] for i in ix]).long()
-        y = torch.stack([source[i + 1 : i + block + 1] for i in ix]).long()
-        return x.to(device), y.to(device)
+        ix = torch.randint(len(source) - block, (self.config.train.batch_size,)).tolist()
+        x = np.stack([source[i : i + block] for i in ix]).astype(np.int64)
+        y = np.stack([source[i + 1 : i + block + 1] for i in ix]).astype(np.int64)
+        return torch.from_numpy(x).to(device), torch.from_numpy(y).to(device)
+
+    def snippet(self, n_chars: int) -> str:
+        """A short run of text from a random spot in train, for sample prompts."""
+        source = self.train_ids
+        width = n_chars * 4
+        if len(source) <= width:
+            return "Pagi"
+        start = int(torch.randint(len(source) - width, (1,)).item())
+        window = bytes(source[start : start + width]).decode("utf-8", errors="ignore")
+        separator = self.config.data.doc_separator
+        pieces = window.split(separator) if separator else [window]
+        pieces = [piece.strip() for piece in pieces if piece.strip()]
+        return max(pieces, key=len)[:n_chars] if pieces else "Pagi"

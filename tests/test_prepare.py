@@ -1,7 +1,12 @@
+import gzip
+import io
 import json
+import tarfile
 from pathlib import Path
 
-from gatra.prepare import load_seen_hashes, parse_size, write_jsonl
+import zstandard
+
+from gatra.prepare import iter_file_rows, load_seen_hashes, parse_size, write_jsonl
 
 
 def test_write_jsonl_keeps_long_id_docs(tmp_path: Path) -> None:
@@ -65,3 +70,35 @@ def test_write_jsonl_joins_instruction_fields(tmp_path: Path) -> None:
     write_jsonl(rows, out, limit=None, min_chars=10, fields=("input", "output"))
     text = json.loads(out.read_text(encoding="utf-8"))["text"]
     assert text == "Bagaimana cara menanak nasi?\n\nCuci beras, lalu masak."
+
+
+def test_write_jsonl_sample_rate_is_deterministic(tmp_path: Path) -> None:
+    rows = [{"text": f"artikel berita indonesia nomor {i} yang cukup panjang"} for i in range(400)]
+    first = write_jsonl(rows, tmp_path / "a.jsonl", limit=None, min_chars=10, sample_rate=0.25)
+    second = write_jsonl(rows, tmp_path / "b.jsonl", limit=None, min_chars=10, sample_rate=0.25)
+    assert 60 < first["kept"] < 140
+    assert first["kept"] + first["sampled_out"] == 400
+    assert (tmp_path / "a.jsonl").read_bytes() == (tmp_path / "b.jsonl").read_bytes()
+    assert second["kept"] == first["kept"]
+
+
+def test_iter_file_rows_reads_zst_gz_and_tar(tmp_path: Path) -> None:
+    lines = "".join(json.dumps({"text": f"baris {i}"}) + "\n" for i in range(3)).encode()
+    zst = tmp_path / "news.jsonl.zst"
+    zst.write_bytes(zstandard.ZstdCompressor().compress(lines))
+    gz = tmp_path / "web.jsonl.gz"
+    gz.write_bytes(gzip.compress(lines))
+    tgz = tmp_path / "papers.tgz"
+    with tarfile.open(tgz, "w:gz") as archive:
+        for name, payload in [
+            ("json/a.json", {"title": "Judul", "content": "Isi berita."}),
+            ("json/._a.json", None),
+            ("README.md", None),
+        ]:
+            data = json.dumps(payload).encode() if payload else b"\x00\x05junk"
+            info = tarfile.TarInfo(name)
+            info.size = len(data)
+            archive.addfile(info, io.BytesIO(data))
+    rows = list(iter_file_rows((str(zst), str(gz), str(tgz))))
+    assert [row.get("text") for row in rows[:6]] == [f"baris {i}" for i in range(3)] * 2
+    assert rows[6:] == [{"title": "Judul", "content": "Isi berita."}]

@@ -40,14 +40,7 @@ def cosine_lr(step: int, config: Config) -> float:
 
 
 def sample_prompt(dataset: TokenDataset, n_chars: int) -> str:
-    texts = [text.strip() for text in dataset.texts if text.strip()]
-    if not texts:
-        return "Pagi"
-    text = texts[int(torch.randint(len(texts), (1,)).item())]
-    if len(text) <= n_chars:
-        return text
-    start = int(torch.randint(len(text) - n_chars + 1, (1,)).item())
-    return text[start : start + n_chars].lstrip()
+    return dataset.snippet(n_chars)
 
 
 @torch.no_grad()
