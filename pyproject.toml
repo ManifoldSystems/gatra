@@ -19,6 +19,7 @@ gatra-train = "gatra.train:main"
 gatra-continue = "gatra.continue_train:main"
 gatra-generate = "gatra.generate:main"
 gatra-prepare = "gatra.prepare:main"
+gatra-identity = "gatra.identity:main"
 
 [build-system]
 requires = ["hatchling"]

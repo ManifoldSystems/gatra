@@ -57,3 +57,11 @@ def test_parse_size() -> None:
     assert parse_size("64KB") == 64_000
     assert parse_size("123") == 123
     assert parse_size(None) is None
+
+
+def test_write_jsonl_joins_instruction_fields(tmp_path: Path) -> None:
+    rows = [{"input": "Bagaimana cara menanak nasi?", "output": "Cuci beras, lalu masak.", "x": 1}]
+    out = tmp_path / "cendol-id.jsonl"
+    write_jsonl(rows, out, limit=None, min_chars=10, fields=("input", "output"))
+    text = json.loads(out.read_text(encoding="utf-8"))["text"]
+    assert text == "Bagaimana cara menanak nasi?\n\nCuci beras, lalu masak."

@@ -46,6 +46,9 @@ Indonesian sources, all streamed (never download the full split):
 | `fineweb2` | `HuggingFaceFW/fineweb-2` | `ind_Latn` | larger, cleaner than CulturaX |
 | `wiki` | `wikimedia/wikipedia` | `20231101.id` | small, formal, fact-dense |
 | `culturax` | `uonlp/CulturaX` | `id` | gated, noisier (mC4 + OSCAR) |
+| `cendol-wikihow` | `indonlp/cendol_collection_v2` | `subset_name == wikihow` | how-to prose, prompt + answer |
+| `cendol-puisi` | `indonlp/cendol_collection_v2` | `subset_name == indo_puisi` | poetry; keep the budget small |
+| `aya` | `CohereLabs/aya_dataset` | `language_code == ind` | ~800 human-written instructions |
 
 FineWeb-Edu itself is English only.
 
@@ -54,7 +57,24 @@ uv sync --extra data
 huggingface-cli login
 uv run gatra-prepare --source wiki --max-bytes 40M
 uv run gatra-prepare --source fineweb2-hq --max-bytes 160M --dedup-against "data/*.jsonl"
+uv run gatra-prepare --source cendol-wikihow --max-bytes 30M --dedup-against "data/*.jsonl"
+uv run gatra-prepare --source cendol-puisi --max-bytes 10M --dedup-against "data/*.jsonl"
+uv run gatra-prepare --source aya --dedup-against "data/*.jsonl"
 ```
+
+Instruction sets are flattened to `prompt\n\nanswer`. Cendol's wikipedia subsets duplicate `wiki`, and its identity/safety prompts teach "I am Cendol", so only wikihow and poetry are pulled.
+
+Not usable as-is: OpenAssistant (12 Indonesian messages), OLMo/Dolma (English), Indo4B (download link returns 403), SEACrowd loaders (need dataset scripts, dropped in `datasets` 4+).
+
+### Identity
+
+`data/gatra-identity.jsonl` is checked in: hard-coded chats in the style of `allenai/olmo-2-hard-coded` (Gatra, built by Braincore RnD, Jakarta). Each row has `messages` for a later SFT stage and `text` for the pretraining mix. Edit `src/gatra/identity.py`, then:
+
+```bash
+uv run gatra-identity
+```
+
+At ~10KB it is noise next to 200MB of web text; identity really sticks during SFT.
 
 Byte tokenizer: 1 byte = 1 token, so `--max-bytes` is a token budget. Chinchilla wants ~20 tokens per parameter: Gatra-10M ≈ 200M, Gatra-100M ≈ 2B. `--limit N` caps documents instead (default 5000 when `--max-bytes` is unset).
 

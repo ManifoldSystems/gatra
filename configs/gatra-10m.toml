@@ -6,9 +6,13 @@ device = "auto"
 # Missing files fail fast; drop lines for sources you have not prepared.
 paths = [
     "data/sample.jsonl",
+    "data/gatra-identity.jsonl",
     "data/fineweb2hq-id.jsonl",
     "data/wiki-id.jsonl",
     "data/culturax-id.jsonl",
+    "data/cendol-wikihow-id.jsonl",
+    "data/cendol-puisi-id.jsonl",
+    "data/aya-id.jsonl",
 ]
 val_ratio = 0.1
 shuffle_docs = true

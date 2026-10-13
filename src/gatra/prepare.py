@@ -15,19 +15,53 @@ class Source:
     config: str
     out: str
     columns: tuple[str, ...] | None = None
+    fields: tuple[str, ...] = ("text",)
+    filters: tuple[tuple, ...] | None = None
+    shuffle: bool = False
 
 
 # Indonesian subsets. FineWeb2-HQ ships per-doc embeddings; stream only the text column.
+# Instruction sets become plain text (prompt, blank line, answer) and are filtered to
+# Indonesian at the parquet level. Cendol keeps only subsets not already covered by wiki
+# and skips its "I am Cendol" identity/safety prompts. Wiki is stored by article id, so a
+# byte budget would only see the oldest articles without shuffling.
 SOURCES = {
     "culturax": Source("uonlp/CulturaX", "id", "data/culturax-id.jsonl"),
     "fineweb2": Source("HuggingFaceFW/fineweb-2", "ind_Latn", "data/fineweb2-id.jsonl"),
     "fineweb2-hq": Source("epfml/FineWeb2-HQ", "ind_Latn", "data/fineweb2hq-id.jsonl", ("text",)),
-    "wiki": Source("wikimedia/wikipedia", "20231101.id", "data/wiki-id.jsonl"),
+    "wiki": Source("wikimedia/wikipedia", "20231101.id", "data/wiki-id.jsonl", shuffle=True),
+    "aya": Source(
+        "CohereLabs/aya_dataset",
+        "default",
+        "data/aya-id.jsonl",
+        columns=("inputs", "targets", "language_code"),
+        fields=("inputs", "targets"),
+        filters=(("language_code", "==", "ind"),),
+    ),
+    # split by subset: the shards are sorted, so one mixed stream is all poetry first
+    "cendol-wikihow": Source(
+        "indonlp/cendol_collection_v2",
+        "default",
+        "data/cendol-wikihow-id.jsonl",
+        columns=("input", "output", "subset_name"),
+        fields=("input", "output"),
+        filters=(("subset_name", "==", "wikihow"),),
+    ),
+    "cendol-puisi": Source(
+        "indonlp/cendol_collection_v2",
+        "default",
+        "data/cendol-puisi-id.jsonl",
+        columns=("input", "output", "subset_name"),
+        fields=("input", "output"),
+        filters=(("subset_name", "==", "indo_puisi"),),
+    ),
 }
 DEFAULT_SOURCE = "culturax"
 DEFAULT_SPLIT = "train"
 DEFAULT_LIMIT = 5000
 DEFAULT_MIN_CHARS = 80
+SHUFFLE_SEED = 1337
+SHUFFLE_BUFFER = 10_000
 
 
 def parse_size(value: str | int | None) -> int | None:
@@ -57,11 +91,9 @@ def load_seen_hashes(paths: list[Path]) -> set[bytes]:
     return seen
 
 
-def _row_text(row: dict) -> str:
-    text = row.get("text")
-    if text is None:
-        return ""
-    return str(text).strip()
+def _row_text(row: dict, fields: tuple[str, ...] = ("text",)) -> str:
+    parts = [str(row[name]).strip() for name in fields if row.get(name) is not None]
+    return "\n\n".join(part for part in parts if part)
 
 
 def iter_rows(
@@ -70,6 +102,8 @@ def iter_rows(
     split: str,
     token: str | None = None,
     columns: tuple[str, ...] | None = None,
+    filters: tuple[tuple, ...] | None = None,
+    shuffle: bool = False,
 ):
     from datasets import load_dataset
 
@@ -78,7 +112,13 @@ def iter_rows(
         kwargs["token"] = token
     if columns:
         kwargs["columns"] = list(columns)
-    return load_dataset(dataset, config, **kwargs)
+    if filters:
+        kwargs["filters"] = list(filters)
+    rows = load_dataset(dataset, config, **kwargs)
+    if shuffle:
+        # shuffles shard order, then mixes rows through a buffer
+        rows = rows.shuffle(seed=SHUFFLE_SEED, buffer_size=SHUFFLE_BUFFER)
+    return rows
 
 
 def write_jsonl(
@@ -89,6 +129,7 @@ def write_jsonl(
     max_bytes: int | None = None,
     dedup: bool = True,
     seen: set[bytes] | None = None,
+    fields: tuple[str, ...] = ("text",),
 ) -> dict:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     seen = seen if seen is not None else set()
@@ -98,7 +139,7 @@ def write_jsonl(
     written = 0
     with out_path.open("w", encoding="utf-8") as handle:
         for row in rows:
-            text = _row_text(row)
+            text = _row_text(row, fields)
             if len(text) < min_chars:
                 skipped += 1
                 continue
@@ -172,7 +213,8 @@ def main() -> None:
     source = SOURCES[args.source]
     dataset = args.dataset or source.dataset
     config = args.lang or source.config
-    columns = None if args.dataset else source.columns
+    # A custom --dataset has its own schema; only presets know their columns and filters.
+    preset = None if args.dataset else source
     out = args.out or Path(source.out)
     limit = args.limit if args.limit is not None else (None if args.max_bytes else DEFAULT_LIMIT)
 
@@ -185,13 +227,22 @@ def main() -> None:
     print(f"streaming {dataset} config={config} split={args.split}")
     print("gated datasets: accept the license and run `huggingface-cli login` first")
     stats = write_jsonl(
-        iter_rows(dataset, config, args.split, token=args.token, columns=columns),
+        iter_rows(
+            dataset,
+            config,
+            args.split,
+            token=args.token,
+            columns=preset.columns if preset else None,
+            filters=preset.filters if preset else None,
+            shuffle=bool(preset and preset.shuffle),
+        ),
         out,
         limit=limit,
         min_chars=args.min_chars,
         max_bytes=args.max_bytes,
         dedup=args.dedup,
         seen=seen,
+        fields=preset.fields if preset else ("text",),
     )
     print(
         f"wrote {stats['kept']} docs ({stats['bytes'] / 1e6:.1f}M bytes) to {stats['path']} "
