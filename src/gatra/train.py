@@ -214,6 +214,8 @@ def train(config: Config, resume: Path | None = None, extra_iters: int | None = 
     )
     if mix:
         print(f"data mix: {mix}")
+    if dataset.duplicates:
+        print(f"dropped {dataset.duplicates} duplicate docs across sources")
 
     if start_step >= config.train.max_iters:
         print(

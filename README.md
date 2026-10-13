@@ -38,28 +38,41 @@ Colab sessions drop. Keep `--max-time` under the session limit and resume from D
 
 ## Data
 
-CulturaX Indonesian subset is config `id` (~23M docs, ~12B tokens). Do not download the full split.
+Indonesian sources, all streamed (never download the full split):
+
+| `--source` | Dataset | Config | Notes |
+|---|---|---|---|
+| `fineweb2-hq` | `epfml/FineWeb2-HQ` | `ind_Latn` | top-quality slice of FineWeb-2; closest to FineWeb-Edu for Indonesian |
+| `fineweb2` | `HuggingFaceFW/fineweb-2` | `ind_Latn` | larger, cleaner than CulturaX |
+| `wiki` | `wikimedia/wikipedia` | `20231101.id` | small, formal, fact-dense |
+| `culturax` | `uonlp/CulturaX` | `id` | gated, noisier (mC4 + OSCAR) |
+
+FineWeb-Edu itself is English only.
 
 ```bash
 uv sync --extra data
 huggingface-cli login
-uv run gatra-prepare --lang id --limit 5000 --out data/culturax-id.jsonl
+uv run gatra-prepare --source wiki --max-bytes 40M
+uv run gatra-prepare --source fineweb2-hq --max-bytes 160M --dedup-against "data/*.jsonl"
 ```
 
-Mix jsonl files like puzzle pieces. Add Wikipedia later without changing the trainer:
+Byte tokenizer: 1 byte = 1 token, so `--max-bytes` is a token budget. Chinchilla wants ~20 tokens per parameter: Gatra-10M ≈ 200M, Gatra-100M ≈ 2B. `--limit N` caps documents instead (default 5000 when `--max-bytes` is unset).
+
+Dedup runs twice: `gatra-prepare` skips docs already seen in the stream (and in `--dedup-against` files), and the trainer drops cross-file duplicates when loading (`dedup = true`, whitespace-normalized exact match). CulturaX and FineWeb-2 both come from CommonCrawl, so expect overlap.
+
+Mix jsonl files like puzzle pieces:
 
 ```toml
 [data]
 paths = [
-    "data/culturax-id.jsonl",
+    "data/fineweb2hq-id.jsonl",
     "data/wiki-id.jsonl",
 ]
 shuffle_docs = true
+dedup = true
 ```
 
-Globs work too: `paths = ["data/*.jsonl"]`. Documents are shuffled, then split train/val.
-
-`--limit 5000` is enough to stop the 20-sentence overfitting. Raise later for Gatra-10M+.
+Globs work too: `paths = ["data/*.jsonl"]`. Documents are deduped, shuffled, then split train/val.
 
 ## Train
 

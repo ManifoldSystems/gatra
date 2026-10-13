@@ -3,12 +3,16 @@ seed = 1337
 device = "auto"
 
 [data]
+# Missing files fail fast; drop lines for sources you have not prepared.
 paths = [
     "data/sample.jsonl",
+    "data/fineweb2hq-id.jsonl",
+    "data/wiki-id.jsonl",
     "data/culturax-id.jsonl",
 ]
 val_ratio = 0.1
 shuffle_docs = true
+dedup = true
 
 [model]
 n_embd = 384

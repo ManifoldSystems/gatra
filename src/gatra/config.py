@@ -21,6 +21,7 @@ class DataConfig:
     paths: list[str] = field(default_factory=list)
     val_ratio: float = 0.1
     shuffle_docs: bool = True
+    dedup: bool = True
     doc_separator: str = "\n"
 
     def sources(self) -> list[str]:
