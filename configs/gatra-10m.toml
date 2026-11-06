@@ -7,6 +7,9 @@ device = "auto"
 bin_dir = "data/bin/gatra-10m"
 val_ratio = 0.1
 dedup = true
+# gatra-identity.jsonl is a tiny persona set deliberately repeated (weight 20 -> ~18 epochs);
+# the default cap of 4 is meant for web-scale sources, so raise it for this mix.
+max_epochs = 25.0
 
 # path = weight. Earlier sources win dedup ties. Missing files fail the build.
 [data.mix]
