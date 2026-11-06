@@ -10,6 +10,7 @@ from gatra.tokenizer import ByteTokenizer
 from gatra.train import (
     _optimizer_state_compatible,
     _restore_rng,
+    cosine_lr,
     find_checkpoint,
     is_sample_step,
     load_checkpoint,
@@ -17,6 +18,7 @@ from gatra.train import (
     sample_interval,
     sample_prompt,
     train,
+    wsd_lr,
 )
 
 
@@ -46,6 +48,60 @@ def test_continue_from_latest(tmp_path: Path) -> None:
     resumed_payload = torch.load(resumed, map_location="cpu", weights_only=False)
     assert resumed_payload["step"] == 5
     assert resumed_payload["tokens_seen"] > payload["tokens_seen"]
+
+
+def test_wsd_schedule_curve(tmp_path: Path) -> None:
+    import pytest
+
+    config = _smoke_config(tmp_path, max_iters=20)
+    assert config.train.schedule == "wsd"
+    peak = config.train.learning_rate
+    floor = peak * config.train.min_lr_ratio
+    assert wsd_lr(0.0, config) == pytest.approx(0.0)
+    assert wsd_lr(256.0, config) == pytest.approx(peak)  # warmup end: 2 iters * 4 * 32
+    assert wsd_lr(300.0, config) == pytest.approx(peak)  # stable plateau
+    assert wsd_lr(2560.0, config) == pytest.approx(floor)  # total: 20 * 4 * 32
+    assert wsd_lr(2304.0, config) == pytest.approx((peak + floor) / 2)  # mid-decay
+
+
+def test_train_loop_uses_wsd_schedule(tmp_path: Path) -> None:
+    import json
+
+    import pytest
+
+    config = _smoke_config(tmp_path)
+    train(config)
+    logged = [
+        json.loads(line)["lr"]
+        for line in (tmp_path / "gatra-smoke" / "metrics.jsonl").read_text().splitlines()
+    ]
+    assert logged, "expected eval metrics with lr"
+    assert logged[0] == pytest.approx(wsd_lr(0.0, config))
+    assert logged[0] != pytest.approx(cosine_lr(0, config))
+
+
+def test_resume_lr_continuous(tmp_path: Path) -> None:
+    import json
+
+    import pytest
+
+    config = _smoke_config(tmp_path, max_iters=3)
+    latest = train(config)
+    before = torch.load(latest, map_location="cpu", weights_only=False)
+    resumed = train(config, resume=find_checkpoint(config, "latest"), extra_iters=2)
+    after = torch.load(resumed, map_location="cpu", weights_only=False)
+    assert after["step"] == 5
+    assert after["tokens_seen"] > before["tokens_seen"]
+    per_step = config.train.batch_size * config.model.block_size
+    assert after["tokens_seen"] == before["tokens_seen"] + 2 * per_step
+    logged = [
+        json.loads(line)
+        for line in (tmp_path / "gatra-smoke" / "metrics.jsonl").read_text().splitlines()
+    ]
+    assert logged[-1]["step"] == 5
+    assert logged[-1]["lr"] == pytest.approx(
+        wsd_lr(float(after["tokens_seen"] - per_step), config)
+    )
 
 
 def test_sample_prompt_and_generation(tmp_path: Path) -> None:

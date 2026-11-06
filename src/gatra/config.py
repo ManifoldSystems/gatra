@@ -79,6 +79,13 @@ class TrainConfig:
     min_lr_ratio: float = 0.1
     weight_decay: float = 0.1
     warmup_iters: int = 50
+    # LR schedule: "wsd" (warmup -> stable -> linear decay over final
+    # `decay_frac` of planned tokens) or legacy "cosine" (iter-indexed).
+    schedule: str = "wsd"
+    # Warmup length in tokens; <= 0 derives warmup_iters * batch * block.
+    warmup_tokens: float = 0.0
+    # Final fraction of planned tokens over which WSD decays to min_lr.
+    decay_frac: float = 0.2
     grad_clip: float = 1.0
     max_time: str | None = None
     out_dir: str = "checkpoints"

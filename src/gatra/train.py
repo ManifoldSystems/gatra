@@ -39,6 +39,44 @@ def cosine_lr(step: int, config: Config) -> float:
     return min_lr + 0.5 * (1.0 + math.cos(math.pi * progress)) * (max_lr - min_lr)
 
 
+def tokens_per_step(config: Config) -> int:
+    return config.train.batch_size * config.model.block_size
+
+
+def planned_tokens(config: Config) -> int:
+    return config.train.max_iters * tokens_per_step(config)
+
+
+def warmup_tokens(config: Config) -> float:
+    if config.train.warmup_tokens > 0:
+        return config.train.warmup_tokens
+    return config.train.warmup_iters * tokens_per_step(config)
+
+
+def wsd_lr(tokens_seen: float, config: Config) -> float:
+    """Warmup-Stable-Decay LR indexed by tokens seen (not iters)."""
+    max_lr = config.train.learning_rate
+    min_lr = max_lr * config.train.min_lr_ratio
+    warmup = warmup_tokens(config)
+    total = planned_tokens(config)
+    if tokens_seen < warmup and warmup > 0:
+        return max_lr * tokens_seen / warmup
+    decay_tokens = max(config.train.decay_frac, 0.0) * total
+    decay_start = total - decay_tokens
+    if tokens_seen < decay_start or decay_tokens <= 0:
+        return max_lr
+    progress = min(1.0, max(0.0, (tokens_seen - decay_start) / decay_tokens))
+    return max_lr + (min_lr - max_lr) * progress
+
+
+def schedule_lr(step: int, tokens_seen: int, config: Config) -> float:
+    if config.train.schedule == "cosine":
+        return cosine_lr(step, config)
+    if config.train.schedule == "wsd":
+        return wsd_lr(float(tokens_seen), config)
+    raise ValueError(f"unknown schedule: {config.train.schedule!r}")
+
+
 def sample_prompt(dataset: TokenDataset, n_chars: int) -> str:
     return dataset.snippet(n_chars)
 
@@ -338,10 +376,10 @@ def train(config: Config, resume: Path | None = None, extra_iters: int | None = 
             handle.write(json.dumps(metrics) + "\n")
 
     if start_step % config.train.eval_interval == 0:
-        log_eval(start_step, cosine_lr(start_step, config), with_sample=False)
+        log_eval(start_step, schedule_lr(start_step, tokens_seen, config), with_sample=False)
 
     for step in range(start_step, config.train.max_iters):
-        lr = cosine_lr(step, config)
+        lr = schedule_lr(step, tokens_seen, config)
         for group in optimizer.param_groups:
             group["lr"] = lr
         x, y = dataset.get_batch("train", device)
