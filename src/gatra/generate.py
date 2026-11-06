@@ -8,7 +8,7 @@ import torch
 from gatra.config import config_from_dict, load_config
 from gatra.device import pick_device
 from gatra.model import Gatra
-from gatra.tokenizer import ByteTokenizer
+from gatra.tokenizer import load_tokenizer
 from gatra.train import load_checkpoint
 
 
@@ -22,16 +22,32 @@ def generate_text(
     device: str | None = None,
 ) -> str:
     payload = torch.load(checkpoint, map_location="cpu", weights_only=False)
-    source = payload.get("config", {}).get("source")
+    saved = payload.get("config", {})
+    source = saved.get("source")
     if source and Path(source).is_file():
         config = load_config(source)
     else:
-        config = config_from_dict(payload.get("config", {}))
+        config = config_from_dict(saved)
+    saved_tokenizer = (saved.get("data") or {}).get("tokenizer")
+    if saved_tokenizer:
+        # the checkpoint records the tokenizer training actually used;
+        # the toml on disk may have moved on since
+        config.data.tokenizer = saved_tokenizer
+    saved_vocab = (saved.get("model") or {}).get("vocab_size")
+    if saved_vocab is not None:
+        # vocab is bound to the checkpoint weights, not a tunable: a toml edit
+        # must not silently rebuild the model with the wrong embedding size
+        config.model.vocab_size = saved_vocab
+    tokenizer = load_tokenizer(config.data.tokenizer or "byte")
+    if config.model.vocab_size != tokenizer.vocab_size:
+        raise ValueError(
+            f"model vocab_size={config.model.vocab_size} != "
+            f"tokenizer vocab {tokenizer.vocab_size}; checkpoint and tokenizer mismatch"
+        )
     device = pick_device(device or config.device)
     model = Gatra(config.model).to(device)
     load_checkpoint(checkpoint, model, None, device)
     model.eval()
-    tokenizer = ByteTokenizer()
     if prompt:
         idx = torch.tensor([tokenizer.encode(prompt)], dtype=torch.long, device=device)
     else:

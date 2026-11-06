@@ -188,3 +188,47 @@ def test_sample_quarters() -> None:
     assert [step for step in range(2001) if is_sample_step(step, 500)] == [500, 1000, 1500, 2000]
     assert sample_interval(20, sample_count=2) == 10
     assert [step for step in range(21) if is_sample_step(step, 10)] == [10, 20]
+
+
+def _bpe_smoke_config(tmp_path, tiny_bpe, max_iters: int = 2):
+    from gatra.config import DataConfig
+
+    config = _smoke_config(tmp_path, max_iters=max_iters)
+    config.train.eval_interval = 1
+    config.train.eval_iters = 1
+    config.data = DataConfig(
+        path=tiny_bpe["corpus"], tokenizer=tiny_bpe["tokenizer"], val_ratio=0.2
+    )
+    config.model.vocab_size = tiny_bpe["vocab"]
+    return config
+
+
+def test_train_rejects_vocab_mismatch(tmp_path) -> None:
+    config = _smoke_config(tmp_path, max_iters=1)
+    config.model.vocab_size = 999
+    try:
+        train(config)
+    except ValueError as error:
+        assert "vocab" in str(error)
+    else:
+        raise AssertionError("expected ValueError")
+
+
+def test_smoke_train_and_generate_bpe(tmp_path, tiny_bpe) -> None:
+    latest = train(_bpe_smoke_config(tmp_path, tiny_bpe))
+    text = generate_text(latest, prompt="Pagi", max_new_tokens=8, temperature=1.0, device="cpu")
+    assert "Pagi" in text
+
+
+def test_generate_rejects_vocab_mismatch(tmp_path, tiny_bpe) -> None:
+    latest = train(_bpe_smoke_config(tmp_path, tiny_bpe))
+    payload = torch.load(latest, map_location="cpu", weights_only=False)
+    payload["config"]["model"]["vocab_size"] = 999
+    broken = tmp_path / "broken.pt"
+    torch.save(payload, broken)
+    try:
+        generate_text(broken, prompt="Pagi", max_new_tokens=4, device="cpu")
+    except ValueError as error:
+        assert "vocab" in str(error)
+    else:
+        raise AssertionError("expected ValueError")

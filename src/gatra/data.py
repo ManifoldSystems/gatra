@@ -13,7 +13,7 @@ import torch
 
 from gatra.config import Config
 from gatra.prepare import doc_hash
-from gatra.tokenizer import ByteTokenizer
+from gatra.tokenizer import BPETokenizer, ByteTokenizer, load_tokenizer
 
 META_FILE = "meta.json"
 TRAIN_FILE = "train.bin"
@@ -79,13 +79,22 @@ class SourceStats:
     val_bytes: int = 0
 
 
-def write_corpus(config: Config, train_out: BinaryIO, val_out: BinaryIO) -> dict[str, SourceStats]:
+def write_corpus(
+    config: Config,
+    train_out: BinaryIO,
+    val_out: BinaryIO,
+    tokenizer: ByteTokenizer | BPETokenizer | None = None,
+) -> dict[str, SourceStats]:
     """Stream every source once: dedup, split by doc hash, repeat train docs by weight.
 
     The hash split keeps a doc on the same side across rebuilds and gives every source a
     share of val. Weight 2.5 writes a train doc twice, plus a third time for half of them.
     Order inside train.bin does not matter: batches sample random windows.
+    Byte docs are written as utf-8 + doc_separator; BPE docs as uint16 ids + EOS, so no
+    ghost transition spans a doc boundary.
     """
+    tokenizer = tokenizer or load_tokenizer(config.data.tokenizer or "byte")
+    is_bpe = isinstance(tokenizer, BPETokenizer)
     separator = config.data.doc_separator.encode("utf-8")
     seen: set[bytes] = set()
     stats: dict[str, SourceStats] = {}
@@ -102,26 +111,37 @@ def write_corpus(config: Config, train_out: BinaryIO, val_out: BinaryIO) -> dict
                     continue
                 seen.add(key)
             source.docs += 1
-            data = text.encode("utf-8") + separator
+            if is_bpe:
+                data = np.asarray(tokenizer.encode_doc(text), dtype=np.uint16).tobytes()
+                units = len(data) // 2  # tokens, not bytes
+            else:
+                data = text.encode("utf-8") + separator
+                units = len(data)
             if _unit(key, 0) < config.data.val_ratio:
                 val_out.write(data)
                 source.val_docs += 1
-                source.val_bytes += len(data)
+                source.val_bytes += units
                 continue
             repeats = whole + int(_unit(key, 1) < frac)
             for _ in range(repeats):
                 train_out.write(data)
             source.train_docs += repeats
-            source.train_bytes += repeats * len(data)
+            source.train_bytes += repeats * units
     return stats
 
 
-def _meta(config: Config, stats: dict[str, SourceStats], train: int, val: int) -> dict:
+def _meta(config: Config, stats: dict[str, SourceStats], train: int, val: int, tokenizer) -> dict:
+    if isinstance(tokenizer, BPETokenizer):
+        tok_spec: dict = {"name": "bpe", "vocab": tokenizer.vocab_size}
+        dtype, separator = "uint16", None
+    else:
+        tok_spec = {"name": "byte", "vocab": 256}
+        dtype, separator = "uint8", config.data.doc_separator
     return {
         "name": config.name,
-        "tokenizer": "byte",
-        "dtype": "uint8",
-        "doc_separator": config.data.doc_separator,
+        "tokenizer": tok_spec,
+        "dtype": dtype,
+        "doc_separator": separator,
         "val_ratio": config.data.val_ratio,
         "dedup": config.data.dedup,
         "mix": {Path(raw).name: weight for raw, weight in config.data.weighted_sources()},
@@ -133,26 +153,36 @@ def _meta(config: Config, stats: dict[str, SourceStats], train: int, val: int) -
 
 def build_bins(config: Config, out_dir: Path) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
+    tokenizer = load_tokenizer(config.data.tokenizer or "byte")
     train_tmp = out_dir / f"{TRAIN_FILE}.tmp"
     val_tmp = out_dir / f"{VAL_FILE}.tmp"
     with train_tmp.open("wb") as train_out, val_tmp.open("wb") as val_out:
-        stats = write_corpus(config, train_out, val_out)
+        stats = write_corpus(config, train_out, val_out, tokenizer)
     os.replace(train_tmp, out_dir / TRAIN_FILE)
     os.replace(val_tmp, out_dir / VAL_FILE)
     meta = _meta(
         config,
         stats,
-        (out_dir / TRAIN_FILE).stat().st_size,
-        (out_dir / VAL_FILE).stat().st_size,
+        (out_dir / TRAIN_FILE).stat().st_size // (2 if isinstance(tokenizer, BPETokenizer) else 1),
+        (out_dir / VAL_FILE).stat().st_size // (2 if isinstance(tokenizer, BPETokenizer) else 1),
+        tokenizer,
     )
     (out_dir / META_FILE).write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
     return meta
 
 
-def _memmap(path: Path) -> np.ndarray:
+def _memmap(path: Path, dtype) -> np.ndarray:
     if path.stat().st_size == 0:
-        return np.zeros(0, dtype=np.uint8)
-    return np.memmap(path, dtype=np.uint8, mode="r")
+        return np.zeros(0, dtype=dtype)
+    return np.memmap(path, dtype=dtype, mode="r")
+
+
+def _bin_tokenizer_spec(meta: dict) -> tuple[str, int | None]:
+    """(name, vocab) from a meta tokenizer field; accepts the legacy `"byte"` string."""
+    spec = meta.get("tokenizer")
+    if isinstance(spec, str):
+        return spec, 256 if spec == "byte" else None
+    return spec.get("name"), spec.get("vocab")
 
 
 def load_bins(config: Config) -> tuple[np.ndarray, np.ndarray, dict]:
@@ -162,12 +192,19 @@ def load_bins(config: Config) -> tuple[np.ndarray, np.ndarray, dict]:
         hint = config.source or "<config>"
         raise FileNotFoundError(f"no token bins in {bin_dir}; run `gatra-build --config {hint}`")
     meta = json.loads(meta_path.read_text(encoding="utf-8"))
-    if meta.get("tokenizer") != "byte" or meta.get("dtype") != "uint8":
-        raise ValueError(f"{bin_dir} holds {meta.get('tokenizer')} tokens; trainer expects byte")
+    name, _vocab = _bin_tokenizer_spec(meta)
+    if name == "byte":
+        dtype = np.uint8
+    elif name == "bpe":
+        dtype = np.uint16
+    else:
+        raise ValueError(f"{bin_dir} holds {meta.get('tokenizer')} tokens; rerun gatra-build")
+    if meta.get("dtype") not in (None, "uint8", "uint16"):
+        raise ValueError(f"{bin_dir} holds {meta.get('dtype')} tokens; rerun gatra-build")
     current = {Path(raw).name: weight for raw, weight in config.data.weighted_sources()}
     if meta.get("mix") != current:
         print(f"warning: {bin_dir} was built from a different data mix; rerun gatra-build")
-    return _memmap(bin_dir / TRAIN_FILE), _memmap(bin_dir / VAL_FILE), meta
+    return _memmap(bin_dir / TRAIN_FILE, dtype), _memmap(bin_dir / VAL_FILE, dtype), meta
 
 
 def _ensure_val(
@@ -186,23 +223,43 @@ def _ensure_val(
 
 
 class TokenDataset:
-    def __init__(self, config: Config, tokenizer: ByteTokenizer | None = None) -> None:
+    def __init__(self, config: Config, tokenizer: ByteTokenizer | BPETokenizer | None = None) -> None:
         self.config = config
-        self.tokenizer = tokenizer or ByteTokenizer()
-        if not isinstance(self.tokenizer, ByteTokenizer):
-            raise TypeError("token bins are uint8 bytes; only ByteTokenizer is supported")
+        self.tokenizer = tokenizer or load_tokenizer(config.data.tokenizer or "byte")
+        is_bpe = isinstance(self.tokenizer, BPETokenizer)
         if config.data.bin_dir:
             train, val, self.meta = load_bins(config)
         else:
             train_buf, val_buf = io.BytesIO(), io.BytesIO()
-            stats = write_corpus(config, train_buf, val_buf)
-            train = np.frombuffer(train_buf.getvalue(), dtype=np.uint8)
-            val = np.frombuffer(val_buf.getvalue(), dtype=np.uint8)
-            self.meta = _meta(config, stats, len(train), len(val))
+            stats = write_corpus(config, train_buf, val_buf, self.tokenizer)
+            dtype = np.uint16 if is_bpe else np.uint8
+            train = np.frombuffer(train_buf.getvalue(), dtype=dtype)
+            val = np.frombuffer(val_buf.getvalue(), dtype=dtype)
+            self.meta = _meta(config, stats, len(train), len(val), self.tokenizer)
+        self._check_tokenizer_bins_match()
         self.train_ids, self.val_ids = _ensure_val(train, val, config)
         sources = self.meta["sources"].items()
         self.source_counts = {name: item["docs"] for name, item in sources}
         self.duplicates = sum(item["duplicates"] for _, item in sources)
+
+    def _check_tokenizer_bins_match(self) -> None:
+        name, vocab = _bin_tokenizer_spec(self.meta)
+        if isinstance(self.tokenizer, BPETokenizer):
+            if name != "bpe":
+                raise ValueError(
+                    f"bins hold {name} tokens but config uses BPE; "
+                    "rerun gatra-build with the BPE tokenizer or set data.tokenizer"
+                )
+            if vocab is not None and self.tokenizer.vocab_size != vocab:
+                raise ValueError(
+                    f"tokenizer vocab {self.tokenizer.vocab_size} != bins vocab {vocab}; "
+                    "the tokenizer.json is stale, rerun gatra-build"
+                )
+        elif name != "byte":
+            raise ValueError(
+                f"bins hold {name} tokens but config uses the byte tokenizer; "
+                "set data.tokenizer to the tokenizer.json used by gatra-build"
+            )
 
     def get_batch(self, split: str, device: torch.device) -> tuple[torch.Tensor, torch.Tensor]:
         source = self.train_ids if split == "train" else self.val_ids
@@ -216,6 +273,13 @@ class TokenDataset:
 
     def snippet(self, n_chars: int) -> str:
         """A short run of text from a random spot in train, for sample prompts."""
+        if isinstance(self.tokenizer, BPETokenizer):
+            width = max(n_chars, 8)
+            if len(self.train_ids) <= width:
+                return "Pagi"
+            start = int(torch.randint(len(self.train_ids) - width, (1,)).item())
+            text = self.tokenizer.decode(self.train_ids[start : start + width].tolist())
+            return text.strip()[:n_chars] or "Pagi"
         source = self.train_ids
         width = n_chars * 4
         if len(source) <= width:

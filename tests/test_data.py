@@ -5,7 +5,8 @@ import numpy as np
 import torch
 
 from gatra.config import Config, DataConfig, ModelConfig, load_config
-from gatra.data import TokenDataset, build_bins, resolve_data_files
+from gatra.data import TRAIN_FILE, TokenDataset, build_bins, resolve_data_files
+from gatra.tokenizer import BPETokenizer
 
 MODEL = ModelConfig(n_embd=32, n_head=4, n_layer=1, block_size=8)
 
@@ -132,3 +133,84 @@ def test_config_mix_and_bin_dir_resolve_from_repo_root(tmp_path: Path) -> None:
     config = load_config(tmp_path / "configs" / "x.toml")
     assert config.data.bin_dir == str(tmp_path / "data" / "bin" / "x")
     assert config.data.weighted_sources() == [(str(tmp_path / "data" / "only-in-tmp.jsonl"), 2.0)]
+
+
+def _bpe_config(tiny_bpe, **kwargs) -> Config:
+    data = DataConfig(path=tiny_bpe["corpus"], tokenizer=tiny_bpe["tokenizer"], **kwargs)
+    return Config(data=data, model=MODEL)
+
+
+def _split_on_eos(ids: list[int], eos_id: int) -> list[list[int]]:
+    pieces, current = [], []
+    for item in ids:
+        if item == eos_id:
+            pieces.append(current)
+            current = []
+        else:
+            current.append(item)
+    assert not current, "every doc must be EOS-terminated"
+    return pieces
+
+
+def test_build_bins_bpe_writes_uint16_with_eos_boundaries(tmp_path, tiny_bpe) -> None:
+    meta = build_bins(_bpe_config(tiny_bpe, val_ratio=0.0), tmp_path / "bin")
+    assert meta["tokenizer"] == {"name": "bpe", "vocab": tiny_bpe["vocab"]}
+    assert meta["dtype"] == "uint16"
+    assert meta["doc_separator"] is None
+    raw = (tmp_path / "bin" / TRAIN_FILE).read_bytes()
+    ids = np.frombuffer(raw, dtype=np.uint16).tolist()
+    assert meta["train_tokens"] == len(ids)
+    tok = BPETokenizer(tiny_bpe["tokenizer"])
+    pieces = _split_on_eos(ids, tok.eos_id)
+    assert len(pieces) == len(tiny_bpe["docs"])
+    assert {tok.decode(piece) for piece in pieces} == set(tiny_bpe["docs"])
+
+
+def test_build_bins_meta_is_single_schema(tmp_path) -> None:
+    _write_jsonl(tmp_path / "a.jsonl", ["dokumen byte biasa"])
+    config = Config(data=DataConfig(path=str(tmp_path / "a.jsonl")), model=MODEL)
+    meta = build_bins(config, tmp_path / "bin")
+    assert meta["tokenizer"] == {"name": "byte", "vocab": 256}
+    assert meta["dtype"] == "uint8"
+
+
+def test_bpe_literal_eos_in_text_has_no_phantom_boundary(tmp_path, tiny_bpe) -> None:
+    _write_jsonl(tmp_path / "tricky.jsonl", ["dokumen dengan <eos> literal di tengah kalimat panjang"])
+    data = DataConfig(path=str(tmp_path / "tricky.jsonl"), tokenizer=tiny_bpe["tokenizer"])
+    build_bins(Config(data=data, model=MODEL), tmp_path / "bin")
+    tok = BPETokenizer(tiny_bpe["tokenizer"])
+    ids = np.frombuffer((tmp_path / "bin" / TRAIN_FILE).read_bytes(), dtype=np.uint16).tolist()
+    assert ids.count(tok.eos_id) == 1 and ids[-1] == tok.eos_id
+
+
+def test_dataset_loads_bpe_bins_with_config_tokenizer(tmp_path, tiny_bpe) -> None:
+    config = _bpe_config(tiny_bpe, val_ratio=0.0)
+    build_bins(config, tmp_path / "bin")
+    config.data.bin_dir = str(tmp_path / "bin")
+    dataset = TokenDataset(config)
+    assert isinstance(dataset.tokenizer, BPETokenizer)
+    assert dataset.train_ids.dtype == np.uint16
+    x, y = dataset.get_batch("train", torch.device("cpu"))
+    assert x.dtype == torch.long
+    assert torch.equal(x[:, 1:], y[:, :-1])
+    assert dataset.snippet(8)
+
+
+def test_dataset_in_memory_bpe_without_bins(tiny_bpe) -> None:
+    dataset = TokenDataset(_bpe_config(tiny_bpe, val_ratio=0.0))
+    assert dataset.train_ids.dtype == np.uint16
+    x, _ = dataset.get_batch("train", torch.device("cpu"))
+    assert x.max() < tiny_bpe["vocab"]
+
+
+def test_dataset_rejects_tokenizer_bin_mismatch(tmp_path, tiny_bpe) -> None:
+    config = _bpe_config(tiny_bpe, val_ratio=0.0)
+    build_bins(config, tmp_path / "bin")
+    config.data.bin_dir = str(tmp_path / "bin")
+    config.data.tokenizer = "byte"
+    try:
+        TokenDataset(config)
+    except ValueError as error:
+        assert "bpe" in str(error)
+    else:
+        raise AssertionError("expected ValueError")

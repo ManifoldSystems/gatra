@@ -13,7 +13,6 @@ from gatra.config import Config, apply_overrides, load_config
 from gatra.data import TokenDataset
 from gatra.device import resolve_device
 from gatra.model import Gatra
-from gatra.tokenizer import ByteTokenizer
 
 
 def sample_interval(max_iters: int, sample_every: int = 0, sample_count: int = 4) -> int:
@@ -284,7 +283,13 @@ def train(config: Config, resume: Path | None = None, extra_iters: int | None = 
     device = info.device
     if resume is None:
         torch.manual_seed(config.seed)
-    dataset = TokenDataset(config, ByteTokenizer())
+    dataset = TokenDataset(config)
+    if config.model.vocab_size != dataset.tokenizer.vocab_size:
+        raise ValueError(
+            f"model vocab_size={config.model.vocab_size} != "
+            f"tokenizer vocab {dataset.tokenizer.vocab_size}; "
+            "set model.vocab_size to the tokenizer vocab so no embedding rows sit idle"
+        )
     model = Gatra(config.model).to(device)
     optimizer = torch.optim.AdamW(
         model.parameters(),

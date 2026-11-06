@@ -23,6 +23,8 @@ class DataConfig:
     mix: dict[str, float] = field(default_factory=dict)
     # prebuilt token bins from `gatra-build`; empty builds the corpus in memory each run
     bin_dir: str = ""
+    # "byte" or a path to a trained tokenizer.json (byte-level BPE)
+    tokenizer: str = "byte"
     val_ratio: float = 0.1
     dedup: bool = True
     doc_separator: str = "\n"
@@ -152,6 +154,8 @@ def load_config(path: str | Path) -> Config:
     if config.data.bin_dir and not Path(config.data.bin_dir).is_absolute():
         # bins may not exist yet (gatra-build writes them), so anchor to the repo root
         config.data.bin_dir = str(root / config.data.bin_dir)
+    if config.data.tokenizer not in ("", "byte") and not Path(config.data.tokenizer).is_absolute():
+        config.data.tokenizer = str(root / config.data.tokenizer)
     return config
 
 
