@@ -44,6 +44,8 @@ class DataConfig:
 class ModelConfig:
     n_embd: int = 128
     n_head: int = 4
+    # 0 = follow n_head (MHA, legacy-compatible); set < n_head for GQA.
+    n_kv_heads: int = 0
     n_layer: int = 4
     n_ff: int = 0
     block_size: int = 128
@@ -51,10 +53,16 @@ class ModelConfig:
     rope_base: float = 10000.0
     norm_eps: float = 1e-6
     vocab_size: int = 256
+    use_qk_norm: bool = True
+    z_loss_coef: float = 0.0
 
     def __post_init__(self) -> None:
         if self.n_embd % self.n_head != 0:
             raise ValueError("n_embd must be divisible by n_head")
+        if self.n_kv_heads <= 0:
+            self.n_kv_heads = self.n_head
+        if self.n_head % self.n_kv_heads != 0:
+            raise ValueError("n_head must be divisible by n_kv_heads")
         if (self.n_embd // self.n_head) % 2 != 0:
             raise ValueError("head dimension must be even for RoPE")
         if self.n_ff <= 0:

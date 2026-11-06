@@ -150,11 +150,85 @@ def save_checkpoint(
     torch.save(payload, path)
 
 
+def _remap_legacy_attn_keys(state: dict, model: Gatra) -> dict:
+    """Remap fused MHA keys (qkv/proj) from pre-GQA checkpoints to split projections.
+
+    Old: blocks.{i}.attn.qkv.weight [3d, d], blocks.{i}.attn.proj.weight [d, d].
+    New: q_proj [n_q*hd, d], k_proj/v_proj [n_kv*hd, d], o_proj [d, d].
+    Only applies when the checkpoint has fused keys and the model has split keys
+    with matching total QKV rows (i.e. legacy MHA shapes). Returns a new dict.
+    """
+    own = model.state_dict()
+    if not any("attn.qkv.weight" in key for key in state):
+        return state
+    remapped = dict(state)
+    remapped_any = False
+    for key in [key for key in state if key.endswith("attn.qkv.weight")]:
+        prefix = key[: -len("qkv.weight")]
+        fused = state[key]
+        d = model.config.n_embd
+        n_q, n_kv = model.config.n_head, model.config.n_kv_heads
+        head_dim = d // n_q
+        # Legacy checkpoints are always MHA: 3 stacked [d, d] blocks (q, k, v).
+        if fused.shape != torch.Size([3 * d, d]):
+            continue
+        expected = {
+            prefix + "q_proj.weight": torch.Size([n_q * head_dim, d]),
+            prefix + "k_proj.weight": torch.Size([n_kv * head_dim, d]),
+            prefix + "v_proj.weight": torch.Size([n_kv * head_dim, d]),
+        }
+        if any(own.get(name, torch.empty(0)).shape != shape for name, shape in expected.items()):
+            continue
+        q, k, v = fused.view(3, d, d).unbind(0)
+        # Q keeps the full block; K/V keep the first n_kv head-groups.
+        kv_rows = n_kv * head_dim
+        remapped[prefix + "q_proj.weight"] = q.contiguous()
+        remapped[prefix + "k_proj.weight"] = k[:kv_rows].contiguous()
+        remapped[prefix + "v_proj.weight"] = v[:kv_rows].contiguous()
+        del remapped[key]
+        remapped_any = True
+    for key in [key for key in state if key.endswith("attn.proj.weight")]:
+        prefix = key[: -len("proj.weight")]
+        if prefix + "o_proj.weight" in own and state[key].shape == own[prefix + "o_proj.weight"].shape:
+            remapped[prefix + "o_proj.weight"] = state[key]
+            if key in remapped:
+                del remapped[key]
+            remapped_any = True
+    if remapped_any:
+        # Legacy checkpoints predate QK-norm: fill missing q/k-norm scales with
+        # ones (identical to fresh init) so strict load succeeds.
+        for name, param in own.items():
+            if name not in remapped and name.endswith(("attn.q_norm.weight", "attn.k_norm.weight")):
+                remapped[name] = torch.ones_like(param)
+    return remapped
+
+
+def _optimizer_state_compatible(opt_state: dict, model: Gatra) -> bool:
+    """Check saved optimizer moments match current param shapes (index-aligned).
+
+    Legacy fused-qkv checkpoints shift every index after the first block, so any
+    shape mismatch means the moments are unusable → caller keeps a fresh optimizer.
+    """
+    saved = opt_state.get("state", {})
+    for idx, param in enumerate(model.parameters()):
+        entry = saved.get(idx, saved.get(str(idx)))
+        if not entry:
+            continue
+        for value in entry.values():
+            if torch.is_tensor(value) and value.shape != param.shape:
+                return False
+    return True
+
+
 def load_checkpoint(path: Path, model: Gatra, optimizer: torch.optim.Optimizer | None, device: torch.device):
     payload = torch.load(path, map_location=device, weights_only=False)
-    model.load_state_dict(payload["model"])
+    state = _remap_legacy_attn_keys(payload["model"], model)
+    model.load_state_dict(state)
     if optimizer is not None and "optimizer" in payload:
-        optimizer.load_state_dict(payload["optimizer"])
+        if _optimizer_state_compatible(payload["optimizer"], model):
+            optimizer.load_state_dict(payload["optimizer"])
+        else:
+            print(f"optimizer state in {path} does not match model shapes; using fresh optimizer")
     return int(payload.get("step", 0)), payload
 
 
