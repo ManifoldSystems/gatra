@@ -105,3 +105,49 @@ def test_z_loss_adds_logz_penalty() -> None:
     expected = loss_plain + 1e-4 * torch.logsumexp(logits.float(), dim=-1).mean().pow(2)
     assert torch.isclose(loss_z, expected, atol=1e-6)
     assert loss_z.item() > loss_plain.item()
+
+
+def test_attn_logit_cap_off_matches_plain_sdpa() -> None:
+    torch.manual_seed(3)
+    plain = Gatra(ModelConfig(n_embd=32, n_head=4, n_kv_heads=2, n_layer=1, block_size=16))
+    model = Gatra(
+        ModelConfig(n_embd=32, n_head=4, n_kv_heads=2, n_layer=1, block_size=16, attn_logit_cap=0.0)
+    )
+    model.load_state_dict(plain.state_dict())
+    model.eval()
+    idx = torch.randint(0, 256, (2, 8))
+    with torch.no_grad():
+        expected, _ = plain(idx)
+        actual, _ = model(idx)
+    torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
+
+
+def test_capped_attention_chunked_matches_full(monkeypatch) -> None:
+    """Chunked cap path must equal single-pass computation (exact softmax).
+
+    Tiap chunk query melihat SEMUA key, jadi softmax eksak; chunking hanya
+    membatasi puncak memori skor ke O(B*H*C*T), bukan O(B*H*T^2).
+    """
+    import gatra.model as model_mod
+
+    torch.manual_seed(4)
+    config = ModelConfig(
+        n_embd=32, n_head=4, n_kv_heads=2, n_layer=1, block_size=16, attn_logit_cap=30.0
+    )
+    model = Gatra(config)
+    model.eval()
+    attn = model.blocks[0].attn
+    x = torch.randn(2, 8, config.n_embd)
+    cos, sin = model.rope(8)
+    with torch.no_grad():
+        full = attn(x, cos, sin)
+    assert torch.isfinite(full).all()
+    monkeypatch.setattr(model_mod, "_CAP_QUERY_CHUNK", 3)
+    with torch.no_grad():
+        chunked = attn(x, cos, sin)
+    torch.testing.assert_close(chunked, full, atol=1e-5, rtol=1e-5)
+    # jalur cap membatasi skor mentah: |score| <= cap
+    q = torch.randn(1, 1, 4, 8) * 100.0
+    k = torch.randn(1, 1, 4, 8) * 100.0
+    scores = attn._cap_scores(q, k)
+    assert scores.abs().max().item() <= 30.0 + 1e-4

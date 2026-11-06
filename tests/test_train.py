@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 import torch
 
 from gatra.config import ModelConfig, load_config
@@ -8,7 +9,6 @@ from gatra.generate import generate_text
 from gatra.model import Gatra
 from gatra.tokenizer import ByteTokenizer
 from gatra.train import (
-    _optimizer_state_compatible,
     _restore_rng,
     cosine_lr,
     find_checkpoint,
@@ -39,20 +39,7 @@ def test_smoke_train_and_generate(tmp_path: Path) -> None:
     assert (tmp_path / "gatra-smoke" / "latest.pt").is_file()
 
 
-def test_continue_from_latest(tmp_path: Path) -> None:
-    config = _smoke_config(tmp_path, max_iters=3)
-    latest = train(config)
-    payload = torch.load(latest, map_location="cpu", weights_only=False)
-    assert payload["step"] == 3
-    resumed = train(config, resume=find_checkpoint(config, "latest"), extra_iters=2)
-    resumed_payload = torch.load(resumed, map_location="cpu", weights_only=False)
-    assert resumed_payload["step"] == 5
-    assert resumed_payload["tokens_seen"] > payload["tokens_seen"]
-
-
 def test_wsd_schedule_curve(tmp_path: Path) -> None:
-    import pytest
-
     config = _smoke_config(tmp_path, max_iters=20)
     assert config.train.schedule == "wsd"
     peak = config.train.learning_rate
@@ -66,8 +53,6 @@ def test_wsd_schedule_curve(tmp_path: Path) -> None:
 
 def test_train_loop_uses_wsd_schedule(tmp_path: Path) -> None:
     import json
-
-    import pytest
 
     config = _smoke_config(tmp_path)
     train(config)
@@ -83,8 +68,6 @@ def test_train_loop_uses_wsd_schedule(tmp_path: Path) -> None:
 def test_resume_lr_continuous(tmp_path: Path) -> None:
     import json
 
-    import pytest
-
     config = _smoke_config(tmp_path, max_iters=3)
     latest = train(config)
     before = torch.load(latest, map_location="cpu", weights_only=False)
@@ -99,6 +82,8 @@ def test_resume_lr_continuous(tmp_path: Path) -> None:
         for line in (tmp_path / "gatra-smoke" / "metrics.jsonl").read_text().splitlines()
     ]
     assert logged[-1]["step"] == 5
+    # logged lr is the LR applied at that step, computed from tokens_seen
+    # before the step's batch
     assert logged[-1]["lr"] == pytest.approx(
         wsd_lr(float(after["tokens_seen"] - per_step), config)
     )
@@ -134,6 +119,13 @@ def _legacy_fused_state_dict(config) -> dict:
     )
     legacy = Gatra(legacy_config)
     legacy_opt = torch.optim.AdamW(legacy.parameters(), lr=3e-4)
+    # Satu step agar optimizer state (moments) terisi: checkpoint legacy
+    # realistis membawa moments fused-qkv yang tak kompatibel dengan GQA.
+    idx = torch.randint(0, legacy_config.vocab_size, (1, 8))
+    _, loss = legacy(idx, torch.randint(0, legacy_config.vocab_size, (1, 8)))
+    legacy_opt.zero_grad()
+    loss.backward()
+    legacy_opt.step()
     state = legacy.state_dict()
     fused = {}
     for key, value in state.items():
@@ -170,15 +162,51 @@ def test_legacy_gatra10m_checkpoint_loads(tmp_path: Path) -> None:
     assert torch.isfinite(logits).all() and torch.isfinite(loss)
 
 
-def test_legacy_optimizer_state_rejected() -> None:
-    torch.manual_seed(9)
-    config = ModelConfig(n_embd=32, n_head=4, n_kv_heads=4, n_layer=1, block_size=16)
+def test_legacy_remap_warns_when_kv_heads_dropped(tmp_path: Path) -> None:
+    """MHA->GQA remap membuang head K/V: wajib UserWarning eksplisit per blok."""
+    config = _smoke_config(tmp_path).model
+    legacy_state, legacy_opt_state = _legacy_fused_state_dict(config)
+    ckpt = tmp_path / "legacy-gatra-10m.pt"
+    torch.save({"model": legacy_state, "optimizer": legacy_opt_state, "step": 0}, ckpt)
     model = Gatra(config)
-    stale = {"state": {0: {"exp_avg": torch.zeros(3 * 32, 32)}}, "param_groups": []}
-    assert not _optimizer_state_compatible(stale, model)
-    fresh_opt = torch.optim.AdamW(model.parameters())
-    fresh = {"state": {}, "param_groups": fresh_opt.state_dict()["param_groups"]}
-    assert _optimizer_state_compatible(fresh, model)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4)
+    with pytest.warns(UserWarning, match="keeps the first|fresh optimizer"):
+        load_checkpoint(ckpt, model, optimizer, torch.device("cpu"))
+
+
+def test_legacy_checkpoint_uses_fresh_optimizer(tmp_path: Path) -> None:
+    """Legacy fused-qkv moments must not poison the new optimizer.
+
+    After loading a legacy checkpoint, one optimizer step must keep every
+    moment shape aligned with the current (split-projection) parameters.
+    """
+    config = _smoke_config(tmp_path).model
+    legacy_state, legacy_opt_state = _legacy_fused_state_dict(config)
+    ckpt = tmp_path / "legacy-gatra-10m.pt"
+    torch.save({"model": legacy_state, "optimizer": legacy_opt_state, "step": 0}, ckpt)
+    model = Gatra(config)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4)
+    # Smoke GQA (4Q-2KV): remap drop head + moments tak kompatibel ->
+    # warning eksplisit (bukan print diam-diam); record karena
+    # pytest.warns bersarang menelan warning yang sama dua kali.
+    import warnings
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        load_checkpoint(ckpt, model, optimizer, torch.device("cpu"))
+    messages = [str(item.message) for item in caught if issubclass(item.category, UserWarning)]
+    assert any("keeps the first" in item for item in messages)
+    assert any("fresh optimizer" in item for item in messages)
+    idx = torch.randint(0, config.vocab_size, (1, 8))
+    _, loss = model(idx, torch.randint(0, config.vocab_size, (1, 8)))
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()  # raises on shape mismatch if stale moments were loaded
+    for group in optimizer.param_groups:
+        for param in group["params"]:
+            entry = optimizer.state[param]
+            for moment in ("exp_avg", "exp_avg_sq"):
+                assert entry[moment].shape == param.shape
 
 
 def test_sample_quarters() -> None:
@@ -218,6 +246,25 @@ def test_smoke_train_and_generate_bpe(tmp_path, tiny_bpe) -> None:
     latest = train(_bpe_smoke_config(tmp_path, tiny_bpe))
     text = generate_text(latest, prompt="Pagi", max_new_tokens=8, temperature=1.0, device="cpu")
     assert "Pagi" in text
+
+
+def test_generate_uses_config_tokenizer_not_checkpoint_pin(tmp_path, tiny_bpe) -> None:
+    """Tiket 03: generate memakai tokenizer dari config/bin, bukan pin checkpoint.
+
+    config_override yang sinkron (tokenizer BPE + vocab 300) menang;
+    config tak sinkron (byte/256 vs checkpoint 300) ditolak fail-closed.
+    """
+    from gatra.generate import generate_text as gen_text
+
+    latest = train(_bpe_smoke_config(tmp_path, tiny_bpe))
+    good = _bpe_smoke_config(tmp_path, tiny_bpe)
+    assert "Pagi" in gen_text(latest, prompt="Pagi", max_new_tokens=4, config_override=good)
+    # Default tanpa override: config dari checkpoint dict (tiket 03),
+    # bukan reload toml di disk yang mungkin sudah drift.
+    # (Perilaku default juga dikunci test_smoke_train_and_generate_bpe.)
+    bad = _smoke_config(tmp_path)  # byte/256 vs checkpoint BPE/300
+    with __import__("pytest").raises(ValueError, match="mismatch"):
+        gen_text(latest, prompt="Pagi", max_new_tokens=4, config_override=bad)
 
 
 def test_generate_rejects_vocab_mismatch(tmp_path, tiny_bpe) -> None:

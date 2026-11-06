@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import warnings
 
 import torch
 import torch.nn as nn
@@ -45,6 +46,11 @@ def apply_rotary(x: torch.Tensor, cos: torch.Tensor, sin: torch.Tensor) -> torch
     return x * cos + rotate_half(x) * sin
 
 
+# Puncak memori skor per chunk: O(B*H*_CAP_QUERY_CHUNK*T), bukan O(B*H*T^2).
+# Tiap chunk query melihat SEMUA key -> softmax tetap eksak, bukan aproksimasi.
+_CAP_QUERY_CHUNK = 512
+
+
 class Attention(nn.Module):
     def __init__(self, config: ModelConfig) -> None:
         super().__init__()
@@ -54,12 +60,44 @@ class Attention(nn.Module):
         self.n_rep = config.n_head // config.n_kv_heads
         self.dropout = config.dropout
         self.use_qk_norm = config.use_qk_norm
+        self.attn_logit_cap = config.attn_logit_cap
         self.q_proj = nn.Linear(config.n_embd, config.n_head * self.head_dim, bias=False)
         self.k_proj = nn.Linear(config.n_embd, config.n_kv_heads * self.head_dim, bias=False)
         self.v_proj = nn.Linear(config.n_embd, config.n_kv_heads * self.head_dim, bias=False)
         self.o_proj = nn.Linear(config.n_embd, config.n_embd, bias=False)
         self.q_norm = RMSNorm(self.head_dim, config.norm_eps)
         self.k_norm = RMSNorm(self.head_dim, config.norm_eps)
+        self.register_buffer("_causal_bool", torch.ones(1, 1, dtype=torch.bool), persistent=False)
+
+    def _causal_mask(self, seq: int, device: torch.device) -> torch.Tensor:
+        """View bool kausal (lower-triangular True); cache tumbuh malas, tanpa factory T²."""
+        cached = self._causal_bool
+        if cached.size(0) < seq or cached.device != device:
+            mask = torch.ones(max(seq, cached.size(0)), max(seq, cached.size(0)), dtype=torch.bool)
+            cached = torch.tril(mask).to(device)
+            self._causal_bool = cached
+        return cached[:seq, :seq]
+
+    def _cap_scores(self, q: torch.Tensor, k: torch.Tensor) -> torch.Tensor:
+        scores = q @ k.transpose(-2, -1) / math.sqrt(self.head_dim)
+        return self.attn_logit_cap * torch.tanh(scores / self.attn_logit_cap)
+
+    def _capped_attention(self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor) -> torch.Tensor:
+        seq = q.size(-2)
+        # Mask kausal bool (T,T) O(T^2) byte — bukan skor float O(B*H*T^2).
+        # Skor float sendiri tidak pernah penuh: di-chunk di sumbu query.
+        mask = self._causal_mask(seq, q.device)
+        dropout_p = self.dropout if self.training else 0.0
+        outs = []
+        for start in range(0, seq, _CAP_QUERY_CHUNK):
+            chunk = q[:, :, start : start + _CAP_QUERY_CHUNK, :]
+            scores = self._cap_scores(chunk, k)
+            scores = scores.masked_fill(~mask[start : start + scores.size(-2), :], float("-inf"))
+            probs = torch.softmax(scores, dim=-1)
+            if dropout_p > 0.0:
+                probs = F.dropout(probs, p=dropout_p, training=True)
+            outs.append(probs @ v)
+        return torch.cat(outs, dim=-2)
 
     def forward(self, x: torch.Tensor, cos: torch.Tensor, sin: torch.Tensor) -> torch.Tensor:
         batch, seq, dim = x.shape
@@ -73,7 +111,10 @@ class Attention(nn.Module):
             k = k.repeat_interleave(self.n_rep, dim=1)
             v = v.repeat_interleave(self.n_rep, dim=1)
         dropout_p = self.dropout if self.training else 0.0
-        out = F.scaled_dot_product_attention(q, k, v, dropout_p=dropout_p, is_causal=True)
+        if self.attn_logit_cap > 0.0:
+            out = self._capped_attention(q, k, v)
+        else:
+            out = F.scaled_dot_product_attention(q, k, v, dropout_p=dropout_p, is_causal=True)
         out = out.transpose(1, 2).contiguous().view(batch, seq, dim)
         return self.o_proj(out)
 

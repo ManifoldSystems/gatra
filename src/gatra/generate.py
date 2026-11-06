@@ -20,24 +20,24 @@ def generate_text(
     top_k: int | None = None,
     top_p: float | None = None,
     device: str | None = None,
+    config_override=None,
 ) -> str:
     payload = torch.load(checkpoint, map_location="cpu", weights_only=False)
     saved = payload.get("config", {})
-    source = saved.get("source")
-    if source and Path(source).is_file():
-        config = load_config(source)
+    # Tiket 03: tokenizer dari config/bin yang dipakai saat training (tersimpan
+    # di checkpoint), bukan pin diam-diam dari toml di disk yang mungkin drift.
+    # Revert scope creep: tak ada reload toml + override implisit; --tokenizer
+    # eksplisit (via generate_with_args) satu-satunya cara mengganti tokenizer.
+    if config_override is not None:
+        config = config_override
+        saved_vocab = (saved.get("model") or {}).get("vocab_size")
+        if saved_vocab is not None and config.model.vocab_size != saved_vocab:
+            raise ValueError(
+                f"override vocab_size={config.model.vocab_size} != "
+                f"checkpoint vocab {saved_vocab}; config/bin and checkpoint mismatch"
+            )
     else:
         config = config_from_dict(saved)
-    saved_tokenizer = (saved.get("data") or {}).get("tokenizer")
-    if saved_tokenizer:
-        # the checkpoint records the tokenizer training actually used;
-        # the toml on disk may have moved on since
-        config.data.tokenizer = saved_tokenizer
-    saved_vocab = (saved.get("model") or {}).get("vocab_size")
-    if saved_vocab is not None:
-        # vocab is bound to the checkpoint weights, not a tunable: a toml edit
-        # must not silently rebuild the model with the wrong embedding size
-        config.model.vocab_size = saved_vocab
     tokenizer = load_tokenizer(config.data.tokenizer or "byte")
     if config.model.vocab_size != tokenizer.vocab_size:
         raise ValueError(
@@ -63,6 +63,30 @@ def generate_text(
     return tokenizer.decode(tokens[0].tolist())
 
 
+def generate_with_args(args: argparse.Namespace) -> str:
+    """Tiket 03: tokenizer dari config/bin; --tokenizer override eksplisit."""
+    checkpoint = Path(args.checkpoint)
+    payload = torch.load(checkpoint, map_location="cpu", weights_only=False)
+    saved = payload.get("config", {})
+    source = saved.get("source")
+    if source and Path(source).is_file():
+        config = load_config(source)
+    else:
+        config = config_from_dict(saved)
+    if getattr(args, "tokenizer", None):
+        config.data.tokenizer = args.tokenizer
+    return generate_text(
+        checkpoint,
+        prompt=args.prompt,
+        max_new_tokens=args.max_new_tokens,
+        temperature=args.temperature,
+        top_k=args.top_k,
+        top_p=args.top_p,
+        device=args.device,
+        config_override=config,
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate text with Gatra")
     parser.add_argument("--checkpoint", required=True)
@@ -72,18 +96,12 @@ def main() -> None:
     parser.add_argument("--top-k", type=int)
     parser.add_argument("--top-p", type=float)
     parser.add_argument("--device", help="auto, cpu, mps, cuda, cuda:N, rocm, rocm:N")
-    args = parser.parse_args()
-    print(
-        generate_text(
-            Path(args.checkpoint),
-            prompt=args.prompt,
-            max_new_tokens=args.max_new_tokens,
-            temperature=args.temperature,
-            top_k=args.top_k,
-            top_p=args.top_p,
-            device=args.device,
-        )
+    parser.add_argument(
+        "--tokenizer",
+        help="override tokenizer dari config/bin (harus kompatibel vocab checkpoint)",
     )
+    args = parser.parse_args()
+    print(generate_with_args(args))
 
 
 if __name__ == "__main__":

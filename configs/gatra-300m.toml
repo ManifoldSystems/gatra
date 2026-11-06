@@ -1,0 +1,116 @@
+name = "gatra-300m"
+seed = 1337
+device = "auto"
+
+# Gatra-300M: 28L/d960/15Q-3KV/V32768/th500k/ctx-4096 = 299885504 params
+# (arch-note gatra-300m-arch-2026-10-22 §1; diverifikasi Gatra(...).param_count()).
+# Budget: batch 512 x block 4096 x iters 1430511 = 2097152 x 1430511 = 3.0000T token.
+# Di hardware kecil JANGAN ubah batch_size diam-diam: pakai --max-iters/--max-time
+# (budget lalu menyusut di bawah 3T — catat angkanya di log run, bukan di sini).
+# Kurikulum konteks (T6): 2048 bulk (~2.6T) -> 4096 (~300B) -> 8K (~80B) -> 16K (~20B).
+# File ini = tahap 4096. Tahap 2048: override block_size=2048 + rebuild bins;
+# tahap 8K/16K: aktifkan SWA hanya-16K + gate recall-ID (lihat T6), bukan di sini.
+
+[data]
+# Bins dari `gatra-build --config configs/gatra-300m.toml`; training baca bin.
+bin_dir = "data/bin/gatra-300m"
+val_ratio = 0.1
+dedup = true
+# Fail-closed: build gagal bila satu sumber terulang >4x (epoch cap T2).
+max_epochs = 4.0
+# Tokenizer BPE-32k T1 (byte-level BPE, fertility gate <=1.5). Artefak dilatih via
+# scripts T1; sebelum ada, smoke-test pakai override tokenizer="byte" (lihat test).
+tokenizer = "data/tokenizer/gatra-300m-bpe.json"
+
+# Mix full-3T (data-note §2): ID 15 / EN 52 / code 15 / math 10 / sintetik 7 /
+# instruksi-decay 1. Bobot per file = bobot AWAL pra-audit; T2 mengunci ulang
+# setelah token unik terukur per sumber. Status per kategori dicatat di bawah;
+# `gatra-build` fail-closed (FileNotFoundError) bila file belum diunduh —
+# unduh via `gatra-prepare --source <nama>` (prepare.py SOURCES).
+[data.profiles.id_web]
+# TERDAFTAR di prepare.py (culturax/fineweb2/fineweb2-hq/wiki/kopi-news/newspapers-2018).
+"data/fineweb2-id.jsonl" = 4.0
+"data/fineweb2hq-id.jsonl" = 3.0
+"data/culturax-id.jsonl" = 3.0
+"data/wiki-id.jsonl" = 2.0
+"data/kopi-news-id.jsonl" = 2.0
+"data/newspapers-2018-id.jsonl" = 1.0
+
+[data.profiles.en_web]
+# TERDAFTAR di prepare.py (fineweb-edu-en/dclm-en). Unduh via gatra-prepare
+# sebelum build full-3T. 31.2 + 20.8 = 52.0.
+"data/fineweb-edu-en.jsonl" = 31.2
+"data/dclm-en.jsonl" = 20.8
+
+[data.profiles.code]
+# TERDAFTAR di prepare.py (stack-edu). Unduh sebelum build full-3T.
+"data/stack-edu-code.jsonl" = 15.0
+
+[data.profiles.math]
+# TERDAFTAR di prepare.py (finemath/infimm-webmath). Unduh sebelum build.
+"data/finemath.jsonl" = 6.0
+"data/infimm-webmath.jsonl" = 4.0
+
+[data.profiles.synthetic]
+# TERDAFTAR di prepare.py (cosmopedia-v2-en). cosmopedia-id = hasil terjemahan
+# T2 §3.4 (belum ada) -> satu-satunya profil unblocked-by-data-acquisition.
+"data/cosmopedia-v2-en.jsonl" = 4.0
+"data/cosmopedia-id.jsonl" = 3.0
+
+[data.profiles.instr_decay]
+# TERDAFTAR di prepare.py (aya/cendol-wikihow/cendol-puisi). Pretrain maks 1%;
+# porsi utama instruksi = SFT, bukan pretrain (data-note §2).
+"data/aya-id.jsonl" = 0.5
+"data/cendol-wikihow-id.jsonl" = 0.3
+"data/cendol-puisi-id.jsonl" = 0.2
+
+[model]
+n_embd = 960
+n_head = 15
+# GQA 15Q-3KV (grup 5, head_dim 64). 0 = MHA legacy; < n_head = GQA.
+n_kv_heads = 3
+n_layer = 28
+# SwiGLU 2.67x (2560 = 8*960/3, bukan 4x — 4x meledak ke 403M).
+n_ff = 2560
+# BPE-32k T1 (embedding tax 10.5%; byte-256 hanya untuk smoke-test).
+vocab_size = 32768
+# Konteks tahap-4096. RoPE theta 500k dari step-0, tetap (16K-ready, T6) —
+# BUKAN 100k arch-note awal; amendemen T3 dicatat di T6.
+block_size = 4096
+rope_base = 500000.0
+dropout = 0.0
+# QK-norm ON (stabilitas @ LR 3e-3). z-loss + logit soft-cap OFF/deferred
+# (arch-note §2.5; divergen dari training-note P1 yang ON — naikkan via A/B).
+use_qk_norm = true
+z_loss_coef = 0.0
+attn_logit_cap = 0.0
+
+[train]
+# Global batch 512 seq x 4096 = 2M token/step (P1). Warmup 2000 iters ~= 4.2B
+# token, dihitung dalam TOKEN (wsd_lr), bukan iter — batch berubah => warmup ikut.
+batch_size = 512
+max_iters = 1430511
+eval_interval = 1000
+eval_iters = 100
+# Peak 3e-3 dari SmolLM2-360M; HANYA valid dengan batch ~2M + warmup + QK-norm.
+# Batch 8k-token + LR ini = divergen (training-note §1). Sweep proxy {2,3,4}e-3
+# di Spark (P0) mengunci angka final; 3e-3 = default konservatif bila seri.
+learning_rate = 3e-3
+# WSD: warmup -> stabil di peak -> decay LINEAR ke 0 di 20% token terakhir.
+# Cosine hanya legacy (gatra-smoke); full run WAJIB wsd (resume/continue aman).
+schedule = "wsd"
+warmup_iters = 2000
+min_lr_ratio = 0.0
+decay_frac = 0.2
+weight_decay = 0.1
+grad_clip = 1.0
+out_dir = "checkpoints"
+sample_tokens = 80
+sample_prompt_chars = 24
+sample_count = 4
+
+[generate]
+max_new_tokens = 200
+temperature = 0.8
+top_k = 50
+top_p = 0.9

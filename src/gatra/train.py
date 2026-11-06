@@ -4,6 +4,7 @@ import argparse
 import json
 import math
 import time
+import warnings
 from dataclasses import asdict
 from pathlib import Path
 
@@ -27,17 +28,6 @@ def is_sample_step(step: int, interval: int) -> bool:
     return interval > 0 and step > 0 and step % interval == 0
 
 
-def cosine_lr(step: int, config: Config) -> float:
-    warmup = max(config.train.warmup_iters, 1)
-    max_lr = config.train.learning_rate
-    min_lr = max_lr * config.train.min_lr_ratio
-    if step < warmup:
-        return max_lr * (step + 1) / warmup
-    progress = (step - warmup) / max(1, config.train.max_iters - warmup)
-    progress = min(1.0, max(0.0, progress))
-    return min_lr + 0.5 * (1.0 + math.cos(math.pi * progress)) * (max_lr - min_lr)
-
-
 def tokens_per_step(config: Config) -> int:
     return config.train.batch_size * config.model.block_size
 
@@ -50,6 +40,17 @@ def warmup_tokens(config: Config) -> float:
     if config.train.warmup_tokens > 0:
         return config.train.warmup_tokens
     return config.train.warmup_iters * tokens_per_step(config)
+
+
+def cosine_lr(step: int, config: Config) -> float:
+    warmup = max(config.train.warmup_iters, 1)
+    max_lr = config.train.learning_rate
+    min_lr = max_lr * config.train.min_lr_ratio
+    if step < warmup:
+        return max_lr * (step + 1) / warmup
+    progress = (step - warmup) / max(1, config.train.max_iters - warmup)
+    progress = min(1.0, max(0.0, progress))
+    return min_lr + 0.5 * (1.0 + math.cos(math.pi * progress)) * (max_lr - min_lr)
 
 
 def wsd_lr(tokens_seen: float, config: Config) -> float:
@@ -218,7 +219,17 @@ def _remap_legacy_attn_keys(state: dict, model: Gatra) -> dict:
             continue
         q, k, v = fused.view(3, d, d).unbind(0)
         # Q keeps the full block; K/V keep the first n_kv head-groups.
+        # Ini truncate diam-diam bila n_kv < n_q: (n_q - n_kv) grup head
+        # per K/V dibuang, bukan rata-rata. Warning eksplisit per blok.
         kv_rows = n_kv * head_dim
+        if kv_rows < d:
+            warnings.warn(
+                f"{prefix}qkv: legacy MHA has {n_q} K/V head-groups, "
+                f"model keeps the first {n_kv}; "
+                f"dropping {n_q - n_kv} head-groups per K/V (not averaged)",
+                UserWarning,
+                stacklevel=4,
+            )
         remapped[prefix + "q_proj.weight"] = q.contiguous()
         remapped[prefix + "k_proj.weight"] = k[:kv_rows].contiguous()
         remapped[prefix + "v_proj.weight"] = v[:kv_rows].contiguous()
@@ -265,7 +276,15 @@ def load_checkpoint(path: Path, model: Gatra, optimizer: torch.optim.Optimizer |
         if _optimizer_state_compatible(payload["optimizer"], model):
             optimizer.load_state_dict(payload["optimizer"])
         else:
-            print(f"optimizer state in {path} does not match model shapes; using fresh optimizer")
+            # Tiket 01: remap key otomatis tanpa `Missing key`; moments
+            # optimizer legacy (index-aligned ke fused-qkv) tidak bisa dipakai
+            # ulang -> fresh optimizer eksplisit via warning, bukan print.
+            warnings.warn(
+                f"optimizer state in {path} does not match model shapes; "
+                "using fresh optimizer (legacy moments dropped)",
+                UserWarning,
+                stacklevel=2,
+            )
     return int(payload.get("step", 0)), payload
 
 

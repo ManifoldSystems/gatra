@@ -145,3 +145,32 @@ def test_parse_args_registers_source_once(monkeypatch) -> None:
     assert parse_args().source == "wiki"
     assert sum("--source" in args for args in calls) == 1
 
+
+def test_300m_profiles_all_registered_in_sources() -> None:
+    """Tiket 05: tiap file di [data.profiles] gatra-300m.toml punya SOURCES.
+
+    Profil tanpa entri SOURCES = unblocked-by-data-acquisition: build
+    full-3T fail-closed (FileNotFoundError) sampai sumber diunduh.
+    Tes mengunci status tiap profil agar tak ada klaim runnable diam-diam.
+    """
+    from pathlib import Path
+
+    from gatra.config import load_config
+
+    config = load_config(
+        Path(__file__).resolve().parents[1] / "configs" / "gatra-300m.toml"
+    )
+    outs = {source.out for source in SOURCES.values()}
+    # cosmopedia-id = hasil terjemahan §3.4 (belum ada): satu-satunya profil
+    # yang sah berstatus unblocked-by-data-acquisition.
+    allowed_missing = {"data/cosmopedia-id.jsonl"}
+    missing: dict[str, list[str]] = {}
+    for profile, files in config.data.profiles.items():
+        absent = sorted(
+            raw
+            for raw in files
+            if raw not in outs and Path(raw).name not in outs and raw not in allowed_missing
+        )
+        if absent:
+            missing[profile] = absent
+    assert missing == {}, f"profil tanpa SOURCES (unblocked-by-data-acquisition): {missing}"

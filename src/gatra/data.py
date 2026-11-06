@@ -63,6 +63,10 @@ def iter_texts(file_path: Path) -> Iterator[str]:
             yield text
 
 
+# Slot hash deterministik: VAL = split train/val, FRAC = bobot fraksional.
+VAL, FRAC = 0, 1
+
+
 def _unit(key: bytes, slot: int) -> float:
     """Deterministic uniform [0, 1) draw from one 8-byte slot of a 16-byte doc hash."""
     return int.from_bytes(key[slot * 8 : (slot + 1) * 8], "little") / 2**64
@@ -123,17 +127,22 @@ def write_corpus(
                 data = text.encode("utf-8") + separator
                 units = len(data)
             source.unique_bytes += units
-            if _unit(key, 0) < config.data.val_ratio:
+            if _unit(key, VAL) < config.data.val_ratio:
                 val_out.write(data)
                 source.val_docs += 1
                 source.val_bytes += units
                 continue
-            repeats = whole + int(_unit(key, 1) < frac)
+            repeats = whole + int(_unit(key, FRAC) < frac)
             for _ in range(repeats):
                 train_out.write(data)
             source.train_docs += repeats
             source.train_bytes += repeats * units
     return stats
+
+
+def _itemsize(tokenizer: ByteTokenizer | BPETokenizer) -> int:
+    """Byte per token di bin: uint16 (BPE) vs uint8 (byte)."""
+    return 2 if isinstance(tokenizer, BPETokenizer) else 1
 
 
 def _meta(config: Config, stats: dict[str, SourceStats], train: int, val: int, tokenizer) -> dict:
@@ -178,7 +187,7 @@ def check_epoch_cap(config: Config, stats: dict[str, SourceStats]) -> None:
 def build_bins(config: Config, out_dir: Path) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     tokenizer = load_tokenizer(config.data.tokenizer or "byte")
-    itemsize = 2 if isinstance(tokenizer, BPETokenizer) else 1
+    itemsize = _itemsize(tokenizer)
     train_tmp = out_dir / f"{TRAIN_FILE}.tmp"
     val_tmp = out_dir / f"{VAL_FILE}.tmp"
     with train_tmp.open("wb") as train_out, val_tmp.open("wb") as val_out:
@@ -197,8 +206,8 @@ def build_bins(config: Config, out_dir: Path) -> dict:
     meta = _meta(
         config,
         stats,
-        (out_dir / TRAIN_FILE).stat().st_size // (2 if isinstance(tokenizer, BPETokenizer) else 1),
-        (out_dir / VAL_FILE).stat().st_size // (2 if isinstance(tokenizer, BPETokenizer) else 1),
+        (out_dir / TRAIN_FILE).stat().st_size // itemsize,
+        (out_dir / VAL_FILE).stat().st_size // itemsize,
         tokenizer,
     )
     (out_dir / META_FILE).write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")

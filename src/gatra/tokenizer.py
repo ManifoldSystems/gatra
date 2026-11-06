@@ -10,7 +10,7 @@ class ByteTokenizer:
     def encode(self, text: str) -> list[int]:
         return list(text.encode("utf-8"))
 
-    def decode(self, ids: list[int]) -> list[int] | str:
+    def decode(self, ids: list[int]) -> str:
         return bytes(id_ % 256 for id_ in ids).decode("utf-8", errors="replace")
 
 
@@ -26,7 +26,12 @@ class BPETokenizer:
     """
 
     def __init__(self, path: str | Path) -> None:
-        from tokenizers import Tokenizer
+        try:
+            from tokenizers import Tokenizer
+        except ImportError as error:
+            raise ImportError(
+                f"{path} needs the BPE extra: pip install 'gatra[bpe]'"
+            ) from error
 
         self.path = str(path)
         self._tok = Tokenizer.from_file(self.path)
@@ -68,11 +73,16 @@ class BPETokenizer:
         min_frequency: int = 2,
     ) -> BPETokenizer:
         """Train a byte-level BPE on jsonl `text` fields; save to `out`."""
-        from tokenizers import Tokenizer
-        from tokenizers.decoders import ByteLevel as ByteLevelDecoder
-        from tokenizers.models import BPE
-        from tokenizers.pre_tokenizers import ByteLevel
-        from tokenizers.trainers import BpeTrainer
+        try:
+            from tokenizers import Tokenizer
+            from tokenizers.decoders import ByteLevel as ByteLevelDecoder
+            from tokenizers.models import BPE
+            from tokenizers.pre_tokenizers import ByteLevel
+            from tokenizers.trainers import BpeTrainer
+        except ImportError as error:
+            raise ImportError(
+                "training a BPE tokenizer needs the BPE extra: pip install 'gatra[bpe]'"
+            ) from error
 
         def texts():
             for raw in files:
