@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 import numpy as np
+import pytest
 import torch
 
 from gatra.config import Config, DataConfig, ModelConfig, load_config
@@ -62,6 +63,8 @@ def test_dedup_across_files(tmp_path: Path) -> None:
         "val_docs": 0,
         "train_bytes": len("hanya di fineweb\n"),
         "val_bytes": 0,
+        "unique_bytes": len("hanya di fineweb\n"),
+        "epochs": 1.0,
     }
     config.data.dedup = False
     assert build_bins(config, tmp_path / "bin2")["sources"]["fineweb2-id.jsonl"]["docs"] == 2
@@ -135,6 +138,55 @@ def test_config_mix_and_bin_dir_resolve_from_repo_root(tmp_path: Path) -> None:
     assert config.data.weighted_sources() == [(str(tmp_path / "data" / "only-in-tmp.jsonl"), 2.0)]
 
 
+def test_profiles_flatten_to_path_weights(tmp_path: Path) -> None:
+    first = tmp_path / "culturax-id.jsonl"
+    second = tmp_path / "fineweb2-en.jsonl"
+    _write_jsonl(first, _docs("culturax", 20))
+    _write_jsonl(second, _docs("fineweb", 20))
+    data = DataConfig(
+        path="", profiles={"id_web": {str(first): 2.0}, "en_web": {str(second): 1.0}}
+    )
+    config = Config(data=data, model=MODEL)
+    assert config.data.weighted_sources() == [(str(first), 2.0), (str(second), 1.0)]
+    meta = build_bins(config, tmp_path / "bin")
+    # categories resolve to files; the build never looks for a file named "id_web"
+    assert set(meta["sources"]) == {"culturax-id.jsonl", "fineweb2-en.jsonl"}
+
+
+def test_explicit_mix_overrides_profile_for_same_path(tmp_path: Path) -> None:
+    first = tmp_path / "a.jsonl"
+    _write_jsonl(first, _docs("a", 10))
+    data = DataConfig(path="", profiles={"id_web": {str(first): 1.0}}, mix={str(first): 3.0})
+    assert Config(data=data, model=MODEL).data.weighted_sources() == [(str(first), 3.0)]
+
+
+def test_config_profiles_resolve_from_repo_root(tmp_path: Path) -> None:
+    (tmp_path / "configs").mkdir()
+    (tmp_path / "data").mkdir()
+    _write_jsonl(tmp_path / "data" / "only-in-tmp.jsonl", ["teks"])
+    (tmp_path / "configs" / "x.toml").write_text(
+        '[data]\n[data.profiles.id_web]\n"data/only-in-tmp.jsonl" = 2.0\n',
+        encoding="utf-8",
+    )
+    config = load_config(tmp_path / "configs" / "x.toml")
+    assert config.data.weighted_sources() == [(str(tmp_path / "data" / "only-in-tmp.jsonl"), 2.0)]
+
+
+def test_build_fails_closed_when_source_exceeds_epoch_cap(tmp_path: Path) -> None:
+    _write_jsonl(tmp_path / "heavy.jsonl", _docs("heavy", 50))
+    data = DataConfig(path="", mix={str(tmp_path / "heavy.jsonl"): 5.0}, val_ratio=0.0)
+    with pytest.raises(ValueError, match="heavy.jsonl"):
+        build_bins(Config(data=data, model=MODEL), tmp_path / "bin")
+    assert not (tmp_path / "bin" / TRAIN_FILE).exists()
+
+
+def test_build_records_epochs_in_meta(tmp_path: Path) -> None:
+    _write_jsonl(tmp_path / "a.jsonl", _docs("a", 50))
+    data = DataConfig(path="", mix={str(tmp_path / "a.jsonl"): 2.0}, val_ratio=0.0)
+    meta = build_bins(Config(data=data, model=MODEL), tmp_path / "bin")
+    assert meta["sources"]["a.jsonl"]["epochs"] == pytest.approx(2.0)
+
+
 def _bpe_config(tiny_bpe, **kwargs) -> Config:
     data = DataConfig(path=tiny_bpe["corpus"], tokenizer=tiny_bpe["tokenizer"], **kwargs)
     return Config(data=data, model=MODEL)
@@ -176,7 +228,7 @@ def test_build_bins_meta_is_single_schema(tmp_path) -> None:
 
 def test_bpe_literal_eos_in_text_has_no_phantom_boundary(tmp_path, tiny_bpe) -> None:
     _write_jsonl(tmp_path / "tricky.jsonl", ["dokumen dengan <eos> literal di tengah kalimat panjang"])
-    data = DataConfig(path=str(tmp_path / "tricky.jsonl"), tokenizer=tiny_bpe["tokenizer"])
+    data = DataConfig(path=str(tmp_path / "tricky.jsonl"), tokenizer=tiny_bpe["tokenizer"], val_ratio=0.0)
     build_bins(Config(data=data, model=MODEL), tmp_path / "bin")
     tok = BPETokenizer(tiny_bpe["tokenizer"])
     ids = np.frombuffer((tmp_path / "bin" / TRAIN_FILE).read_bytes(), dtype=np.uint16).tolist()
@@ -214,3 +266,32 @@ def test_dataset_rejects_tokenizer_bin_mismatch(tmp_path, tiny_bpe) -> None:
         assert "bpe" in str(error)
     else:
         raise AssertionError("expected ValueError")
+
+
+def test_build_bins_writes_nondegenerate_val_for_tiny_corpus(tmp_path: Path) -> None:
+    _write_jsonl(tmp_path / "tiny.jsonl", ["satu dokumen mungil saja"])
+    config = Config(data=DataConfig(path=str(tmp_path / "tiny.jsonl")), model=MODEL)
+    meta = build_bins(config, tmp_path / "bin")
+    val = np.memmap(tmp_path / "bin" / "val.bin", dtype=np.uint8, mode="r")
+    assert len(val) >= MODEL.block_size + 1
+    assert meta["val_tokens"] == len(val)
+    config.data.bin_dir = str(tmp_path / "bin")
+    dataset = TokenDataset(config)
+    dataset.get_batch("val", torch.device("cpu"))
+
+
+def test_load_bins_returns_native_dtype_memmap_without_ram_copy(tmp_path: Path) -> None:
+    _write_jsonl(tmp_path / "a.jsonl", _docs("a", 200))
+    config = Config(data=DataConfig(path="", paths=[str(tmp_path / "a.jsonl")]), model=MODEL)
+    build_bins(config, tmp_path / "bin")
+    config.data.bin_dir = str(tmp_path / "bin")
+    dataset = TokenDataset(config)
+    assert isinstance(dataset.train_ids, np.memmap)
+    assert isinstance(dataset.val_ids, np.memmap)
+    assert dataset.train_ids.dtype == np.uint8
+    assert dataset.val_ids.dtype == np.uint8
+    # batch int64 hanya selebar batch — sumber memmap tidak pernah di-upcast
+    before = len(dataset.train_ids)
+    dataset.get_batch("train", torch.device("cpu"))
+    assert len(dataset.train_ids) == before
+    assert dataset.train_ids.dtype == np.uint8

@@ -82,6 +82,42 @@ SOURCES = {
         fields=("title", "content"),
         files=("hf://datasets/indonesian-nlp/id_newspapers_2018/newspapers-json.tgz",),
     ),
+    # --- Profil 300M non-ID (data-note §2, terverifikasi via datasets-server) ---
+    # EN web 60/40 FineWeb-Edu/DCLM (SmolLM2). Kolom `text` terverifikasi
+    # fineweb-edu; DCLM viewer crash persisten -> fields text standar,
+    # write_jsonl fail-closed (ValueError missing text) bila salah.
+    "fineweb-edu-en": Source(
+        "HuggingFaceFW/fineweb-edu", "default", "data/fineweb-edu-en.jsonl"
+    ),
+    "dclm-en": Source(
+        "mlfoundations/dclm-baseline-1.0", "default", "data/dclm-en.jsonl"
+    ),
+    # Code: Stack-Edu 125B (StarCoder2Data). Kolom konten tak terekspos
+    # datasets-server (hanya 10 kolom metadata); fields content best-effort,
+    # fail-closed bila salah saat unduh nyata.
+    "stack-edu": Source(
+        "HuggingFaceTB/stack-edu",
+        "Python",
+        "data/stack-edu-code.jsonl",
+        fields=("content",),
+    ),
+    # Math: FineMath (`text` terverifikasi) + InfiMM-WebMath-40B (`text_list`).
+    "finemath": Source(
+        "HuggingFaceTB/finemath", "finemath-3plus", "data/finemath.jsonl"
+    ),
+    "infimm-webmath": Source(
+        "Infi-MM/InfiMM-WebMath-40B",
+        "default",
+        "data/infimm-webmath.jsonl",
+        fields=("text_list",),
+    ),
+    # Sintetik: Cosmopedia-v2 (`text` terverifikasi, via smollm-corpus).
+    # `cosmopedia-id` = hasil terjemahan §3.4 (belum ada -> tetap unblocked).
+    "cosmopedia-v2-en": Source(
+        "HuggingFaceTB/smollm-corpus",
+        "cosmopedia-v2",
+        "data/cosmopedia-v2-en.jsonl",
+    ),
 }
 DEFAULT_SOURCE = "culturax"
 DEFAULT_SPLIT = "train"
@@ -127,7 +163,15 @@ def keep_sample(text: str, rate: float | None) -> bool:
 
 
 def _row_text(row: dict, fields: tuple[str, ...] = ("text",)) -> str:
-    parts = [str(row[name]).strip() for name in fields if row.get(name) is not None]
+    parts = []
+    for name in fields:
+        value = row.get(name)
+        if value is None:
+            continue
+        # InfiMM-WebMath memakai `text_list` (list of strings), bukan `text`.
+        if isinstance(value, (list, tuple)):
+            value = "\n\n".join(str(item).strip() for item in value)
+        parts.append(str(value).strip())
     return "\n\n".join(part for part in parts if part)
 
 
@@ -272,6 +316,33 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def resolve_source(args: argparse.Namespace) -> tuple[str, str, Source | None]:
+    """Preset SOURCES + override --dataset/--lang diselesaikan eksplisit.
+
+    Tiket 04: kolom/filter preset hanya valid untuk dataset preset itu.
+    Override dataset kustom memakai skema tak dikenal -> ValueError
+    eksplisit, bukan stream diam-diam dengan kolom preset yang salah.
+    Kembalian: (dataset, config, preset-atau-None).
+    """
+    source = SOURCES[args.source]
+    dataset = args.dataset or source.dataset
+    config = args.lang or source.config
+    preset: Source | None = None if args.dataset else source
+    if preset is None and (
+        source.columns is not None
+        or source.filters is not None
+        or source.files
+        or source.shuffle
+        or source.fields != ("text",)
+    ):
+        raise ValueError(
+            f"--source {args.source!r} preset declares columns/filters/files "
+            f"for {source.dataset!r}, but --dataset overrides to {dataset!r} with "
+            "an unknown schema; drop --dataset or use a preset source"
+        )
+    return dataset, config, preset
+
+
 def _expand(patterns: list[str], exclude: Path) -> list[Path]:
     found: list[Path] = []
     for pattern in patterns:
@@ -287,10 +358,7 @@ def _expand(patterns: list[str], exclude: Path) -> list[Path]:
 def main() -> None:
     args = parse_args()
     source = SOURCES[args.source]
-    dataset = args.dataset or source.dataset
-    config = args.lang or source.config
-    # A custom --dataset has its own schema; only presets know their columns and filters.
-    preset = None if args.dataset else source
+    dataset, config, preset = resolve_source(args)
     out = args.out or Path(source.out)
     limit = args.limit if args.limit is not None else (None if args.max_bytes else DEFAULT_LIMIT)
 

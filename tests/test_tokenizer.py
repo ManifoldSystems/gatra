@@ -1,4 +1,9 @@
-from gatra.tokenizer import BPETokenizer, ByteTokenizer, load_tokenizer
+from gatra.tokenizer import (
+    BPETokenizer,
+    ByteTokenizer,
+    fertility,
+    load_tokenizer,
+)
 
 
 def test_roundtrip_indonesian() -> None:
@@ -56,3 +61,26 @@ def test_bpe_never_emits_unk_on_arbitrary_bytes(tmp_path) -> None:
         ids = tokenizer.encode(text)
         assert unk_id not in ids
         assert tokenizer.decode(ids) == text
+
+
+def test_fertility_gate_threshold() -> None:
+    """T1: fertility = tok/word; gate lolos bila <= 1.5 di sampel ID."""
+    from gatra.tokenizer import fertility_gate
+
+    assert fertility("Pagi itu Gatra belajar", [1, 2, 3, 4]) == 1.0
+    assert fertility_gate({"wiki-id": 1.357, "web-id": 1.215}, threshold=1.5) == []
+    failed = fertility_gate({"wiki-id": 1.6, "web-id": 1.2}, threshold=1.5)
+    assert failed == ["wiki-id"]
+
+
+def test_train_tokenizer_entrypoint_registered() -> None:
+    """T1/PR-3: entrypoint gatra-train-tokenizer + gatra-fertility-gate ada."""
+    import tomllib
+    from pathlib import Path
+
+    raw = tomllib.loads(
+        (Path(__file__).resolve().parents[1] / "pyproject.toml").read_text()
+    )
+    scripts = raw["project"]["scripts"]
+    assert scripts["gatra-train-tokenizer"] == "gatra.scripts.train_tokenizer_300m:main"
+    assert scripts["gatra-fertility-gate"] == "gatra.scripts.fertility_gate:main"

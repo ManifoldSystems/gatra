@@ -21,6 +21,11 @@ class DataConfig:
     paths: list[str] = field(default_factory=list)
     # path -> weight; replaces `paths` when set. 2.0 repeats a source's train docs twice.
     mix: dict[str, float] = field(default_factory=dict)
+    # category -> {path -> weight}; flattened into the mix. An explicit `mix`
+    # entry wins for the same path. `[data.mix]` stays path->weight (main-compatible).
+    profiles: dict[str, dict[str, float]] = field(default_factory=dict)
+    # fail-closed ceiling on per-source repetition (train_bytes / unique_bytes).
+    max_epochs: float = 4.0
     # prebuilt token bins from `gatra-build`; empty builds the corpus in memory each run
     bin_dir: str = ""
     # "byte" or a path to a trained tokenizer.json (byte-level BPE)
@@ -37,8 +42,14 @@ class DataConfig:
         return [self.path] if self.path else []
 
     def weighted_sources(self) -> list[tuple[str, float]]:
-        if self.mix:
-            return [(raw, float(weight)) for raw, weight in self.mix.items()]
+        merged: dict[str, float] = {}
+        for category in self.profiles.values():
+            for raw, weight in category.items():
+                merged[raw] = float(weight)
+        for raw, weight in self.mix.items():
+            merged[raw] = float(weight)
+        if merged:
+            return list(merged.items())
         return [(raw, 1.0) for raw in self.sources()]
 
 
@@ -57,6 +68,8 @@ class ModelConfig:
     vocab_size: int = 256
     use_qk_norm: bool = True
     z_loss_coef: float = 0.0
+    # Soft-cap logit attention ala Gemma-2 (tanh); 0.0 = OFF (jalur SDPA fused).
+    attn_logit_cap: float = 0.0
 
     def __post_init__(self) -> None:
         if self.n_embd % self.n_head != 0:
@@ -147,7 +160,12 @@ def load_config(path: str | Path) -> Config:
     root = config_path.parent.parent
     if config.data.mix:
         config.data.mix = {_resolve_existing(k, root): v for k, v in config.data.mix.items()}
-    elif config.data.paths:
+    if config.data.profiles:
+        config.data.profiles = {
+            name: {_resolve_existing(k, root): v for k, v in category.items()}
+            for name, category in config.data.profiles.items()
+        }
+    if config.data.paths:
         config.data.paths = [_resolve_existing(item, root) for item in config.data.paths]
     else:
         config.data.path = _resolve_existing(config.data.path, root)

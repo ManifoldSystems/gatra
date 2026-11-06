@@ -100,6 +100,19 @@ class BPETokenizer:
         return BPETokenizer(out)
 
 
+def fertility(text: str, ids: list[int]) -> float:
+    """T1: fertility = token per word; word = teks split whitespace."""
+    words = len(text.split())
+    if words == 0:
+        return 0.0
+    return len(ids) / words
+
+
+def fertility_gate(scores: dict[str, float], threshold: float = 1.5) -> list[str]:
+    """T1: kembalikan nama sampel yang fertility-nya > threshold (lolos bila [])."""
+    return sorted(name for name, value in scores.items() if value > threshold)
+
+
 def load_tokenizer(spec: str) -> ByteTokenizer | BPETokenizer:
     """`load_tokenizer("byte")` -> ByteTokenizer; a path -> BPETokenizer."""
     if spec == "byte":

@@ -13,6 +13,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=8.3.0"]
 data = ["datasets>=3.0.0", "huggingface-hub>=0.26.0", "zstandard>=0.23.0"]
+# BPE-32k (T1): hanya dibutuhkan saat data.tokenizer menunjuk tokenizer.json.
+# Byte path (tokenizer="byte") jalan tanpa extra ini.
+bpe = ["tokenizers>=0.21.0"]
 
 [project.scripts]
 gatra-train = "gatra.train:main"
@@ -21,6 +24,8 @@ gatra-generate = "gatra.generate:main"
 gatra-prepare = "gatra.prepare:main"
 gatra-identity = "gatra.identity:main"
 gatra-build = "gatra.build:main"
+gatra-train-tokenizer = "gatra.scripts.train_tokenizer_300m:main"
+gatra-fertility-gate = "gatra.scripts.fertility_gate:main"
 
 [build-system]
 requires = ["hatchling"]

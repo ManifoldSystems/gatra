@@ -1,12 +1,20 @@
 import gzip
 import io
 import json
+import sys
 import tarfile
 from pathlib import Path
 
 import zstandard
 
-from gatra.prepare import iter_file_rows, load_seen_hashes, parse_size, write_jsonl
+from gatra.prepare import (
+    SOURCES,
+    iter_file_rows,
+    load_seen_hashes,
+    parse_args,
+    parse_size,
+    write_jsonl,
+)
 
 
 def test_write_jsonl_keeps_long_id_docs(tmp_path: Path) -> None:
@@ -102,3 +110,38 @@ def test_iter_file_rows_reads_zst_gz_and_tar(tmp_path: Path) -> None:
     rows = list(iter_file_rows((str(zst), str(gz), str(tgz))))
     assert [row.get("text") for row in rows[:6]] == [f"baris {i}" for i in range(3)] * 2
     assert rows[6:] == [{"title": "Judul", "content": "Isi berita."}]
+
+
+def test_source_preset_and_dataset_override_compose(monkeypatch) -> None:
+    """--source preset + --dataset/--lang override: preset menang ke SOURCES.
+
+    Tiket 04: preset kolom/filter hanya valid untuk dataset preset itu.
+    Override dataset kustom tanpa kolom/filter preset (skema tak dikenal)
+    -> ValueError eksplisit, bukan stream diam-diam dengan kolom salah.
+    """
+    from gatra import prepare
+
+    monkeypatch.setattr(
+        sys, "argv", ["gatra-prepare", "--source", "wiki", "--dataset", "org/custom"]
+    )
+    with __import__("pytest").raises(ValueError, match="columns/filters"):
+        prepare.resolve_source(parse_args())
+
+
+def test_parse_args_registers_source_once(monkeypatch) -> None:
+    import argparse
+
+    from gatra import prepare
+
+    calls: list[tuple] = []
+    real_add = argparse.ArgumentParser.add_argument
+
+    def spy(self, *args, **kwargs):
+        calls.append(args)
+        return real_add(self, *args, **kwargs)
+
+    monkeypatch.setattr(argparse.ArgumentParser, "add_argument", spy)
+    monkeypatch.setattr(sys, "argv", ["gatra-prepare", "--source", "wiki"])
+    assert parse_args().source == "wiki"
+    assert sum("--source" in args for args in calls) == 1
+

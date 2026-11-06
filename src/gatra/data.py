@@ -77,6 +77,11 @@ class SourceStats:
     val_docs: int = 0
     train_bytes: int = 0
     val_bytes: int = 0
+    # bytes (tokens for BPE) of each unique doc once; denominator for `epochs`.
+    unique_bytes: int = 0
+    # repetition factor: train_bytes / unique_bytes. The build fails when this
+    # exceeds DataConfig.max_epochs; recorded in meta.json for audit.
+    epochs: float = 0.0
 
 
 def write_corpus(
@@ -117,6 +122,7 @@ def write_corpus(
             else:
                 data = text.encode("utf-8") + separator
                 units = len(data)
+            source.unique_bytes += units
             if _unit(key, 0) < config.data.val_ratio:
                 val_out.write(data)
                 source.val_docs += 1
@@ -151,13 +157,41 @@ def _meta(config: Config, stats: dict[str, SourceStats], train: int, val: int, t
     }
 
 
+def check_epoch_cap(config: Config, stats: dict[str, SourceStats]) -> None:
+    """Fail closed when a source repeats past `data.max_epochs`.
+
+    `epochs` is train_bytes / unique_bytes, so a weight of 5.0 on one file means
+    every doc trains ~5 times. Called by `build_bins` before the bins are
+    published, so an over-cap config never leaves half-written outputs.
+    """
+    over = {
+        name: item.epochs for name, item in stats.items() if item.epochs > config.data.max_epochs
+    }
+    if over:
+        detail = ", ".join(f"{name}={epochs:.2f}" for name, epochs in sorted(over.items()))
+        raise ValueError(
+            f"epoch cap exceeded (max_epochs={config.data.max_epochs:g}): {detail}; "
+            "lower the source weight or raise data.max_epochs"
+        )
+
+
 def build_bins(config: Config, out_dir: Path) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     tokenizer = load_tokenizer(config.data.tokenizer or "byte")
+    itemsize = 2 if isinstance(tokenizer, BPETokenizer) else 1
     train_tmp = out_dir / f"{TRAIN_FILE}.tmp"
     val_tmp = out_dir / f"{VAL_FILE}.tmp"
     with train_tmp.open("wb") as train_out, val_tmp.open("wb") as val_out:
         stats = write_corpus(config, train_out, val_out, tokenizer)
+    for item in stats.values():
+        item.epochs = item.train_bytes / item.unique_bytes if item.unique_bytes else 0.0
+    try:
+        check_epoch_cap(config, stats)
+    except ValueError:
+        train_tmp.unlink(missing_ok=True)
+        val_tmp.unlink(missing_ok=True)
+        raise
+    _ensure_files_have_val(config, train_tmp, val_tmp, itemsize)
     os.replace(train_tmp, out_dir / TRAIN_FILE)
     os.replace(val_tmp, out_dir / VAL_FILE)
     meta = _meta(
@@ -169,6 +203,27 @@ def build_bins(config: Config, out_dir: Path) -> dict:
     )
     (out_dir / META_FILE).write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
     return meta
+
+
+def _ensure_files_have_val(config: Config, train_tmp: Path, val_tmp: Path, itemsize: int) -> None:
+    """Korpus kecil bisa hash nol dokumen ke val; pindah tail train ke val di level file.
+
+    Tanpa ini `val.bin` kosong (degenerasi) dan `_ensure_val` load-time harus
+    menggabungkan ulang kedua bin — tail-split saat build menjaga keduanya
+    non-degenerasi sejak di disk.
+    """
+    block = config.model.block_size
+    need = (block + 1) * itemsize
+    if config.data.val_ratio <= 0 or val_tmp.stat().st_size > need:
+        return
+    raw = train_tmp.read_bytes()
+    total = len(raw) // itemsize
+    if total <= block + 1:
+        raise ValueError(f"dataset too short: {total} tokens, need > {block + 1}")
+    split = max(block + 2, int(total * (1.0 - config.data.val_ratio)))
+    split = min(split, total - (block + 1))
+    val_tmp.write_bytes(raw[split * itemsize :])
+    train_tmp.write_bytes(raw[: split * itemsize])
 
 
 def _memmap(path: Path, dtype) -> np.ndarray:
