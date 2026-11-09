@@ -1,5 +1,35 @@
 # Indonesian short-context SFT pilot preparation
 
+## Assistant-only training pilot
+
+```bash
+python scripts/train_sft.py \
+  --checkpoint checkpoints/gatra-10m-expanded-ctx512-fp16/latest.pt \
+  --out checkpoints/gatra-10m-sft-pilot-v1
+```
+
+This starts from step 88,138 weights with a fresh AdamW optimizer and GradScaler
+for the new objective. Default: two epochs, batch 16, CUDA FP16, peak LR 1e-5,
+50-step warmup and linear decay with a 0.1 floor. Prompts and right-padding have
+labels -100. Only answer bytes and the trailing newline contribute to loss;
+examples remain separate and batches pad dynamically. Causal attention prevents
+right-padding from influencing real-token predictions. No new EOS token is added.
+
+Training caps: 4,000 Alpaca, 2,000 TyDi QA, 1,000 Cendol. Examples with long
+answers (>256 bytes), media requests/URLs, selected markup and other-model
+identity responses are omitted, along with the Newton/mercury issue found in
+inspection. This is limited filtering, not a full semantic audit. Saved
+`train.jsonl`, `validation.jsonl` and `manifest.json` describe the actual subset.
+
+Evaluate assistant-token-weighted held-out loss before training and after each
+epoch, with per-source losses. `best.pt` includes the step-zero baseline if
+neither epoch improves it. SFT step counters are local attempted batches, and
+token counters exclude padding; source pretraining counters are in the manifest.
+Checkpoints save optimizer/scaler, but this pilot script is a fresh-run entry
+point and does not implement exact mid-epoch resumption. Do not resume SFT with
+the full-text pretraining loop. Compare fixed prompts and general-text validation
+before extending this pilot.
+
 ## Prepared candidate counts
 
 | Source | Train | Validation |
