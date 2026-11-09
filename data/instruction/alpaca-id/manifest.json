@@ -1,0 +1,20 @@
+{
+  "dataset": "Ichsan2895/alpaca-gpt4-indonesian",
+  "revision": "4790943e56ebac4626f0717e00a13e8d956645c2",
+  "counts": {
+    "train": 45007,
+    "validation": 4961,
+    "duplicates": 1
+  },
+  "text_bytes": {
+    "train": 37519728,
+    "validation": 4127734
+  },
+  "sha256": {
+    "train": "70b1ece61fe201300a3c08a6d0e17d5aa9deaee96471c655a16e09725bad1890",
+    "validation": "bd65ecd627b2412a8c5b28a0b78cbd1900c9095f67b7dab7c813fdb36649728e"
+  },
+  "split_method": "90/10 deterministic hash of normalized user prompt",
+  "upstream": "FreedomIntelligence/alpaca-gpt4-indonesian",
+  "purpose": "instruction tuning; synthetic data; not yet included in active pretraining run"
+}

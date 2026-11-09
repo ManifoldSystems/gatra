@@ -74,6 +74,15 @@ uv run gatra-prepare --source kopi-news --sample-rate 0.1 --max-bytes 50M --dedu
 - SEACrowd loaders are dataset scripts, which `datasets` 4+ no longer runs. Presets with raw `files` read the upstream `.jsonl.zst`, `.jsonl.gz`, or `.tgz` directly.
 - Not usable as-is: OpenAssistant (12 Indonesian messages), OLMo/Dolma (English), Indo4B (link returns 403; release is lowercased), Liputan6 (pre-tokenized summarization data).
 
+### Instruction data for later SFT
+
+Prepared Alpaca GPT-4 Indonesian and OpenAssistant Indonesian conversations are
+available as compressed JSONL in [`data/instruction/`](data/instruction/README.md).
+They preserve user/assistant roles, source revisions, and train/validation splits.
+They are not automatically included in the pretraining mix; assistant-only SFT
+requires trainer support. See the dataset README for counts, provenance, licenses,
+extraction, and the reproducible `scripts/prepare_instruction.py` command.
+
 ### Identity
 
 `data/gatra-identity.jsonl` is checked in: hard-coded chats in the style of `allenai/olmo-2-hard-coded` (Gatra, built by Braincore RnD, Jakarta). Each row has `messages` for a later SFT stage and `text` for the pretraining mix. Edit `src/gatra/identity.py`, then:

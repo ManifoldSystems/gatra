@@ -1,0 +1,20 @@
+{
+  "dataset": "OpenAssistant/oasst1",
+  "revision": "fdf72ae0827c1cda404aff25b6603abec9e3399b",
+  "counts": {
+    "train": 3
+  },
+  "text_bytes": {
+    "train": 1897
+  },
+  "sha256": {
+    "train": "21783038ab972f4ecfc8254419c38c2870fc9aae488ca2fd412fe9c6942d3609",
+    "validation": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "split_method": "original upstream train/validation, checked for tree isolation",
+  "filtering": "Indonesian only; complete alternating paths; reject deleted/negative-review messages; best-ranked available Indonesian assistant reply; maximal paths",
+  "raw_indonesian_messages": {
+    "train": 12
+  },
+  "skipped": {}
+}

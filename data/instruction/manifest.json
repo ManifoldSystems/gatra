@@ -1,0 +1,42 @@
+[
+  {
+    "dataset": "Ichsan2895/alpaca-gpt4-indonesian",
+    "revision": "4790943e56ebac4626f0717e00a13e8d956645c2",
+    "counts": {
+      "train": 45007,
+      "validation": 4961,
+      "duplicates": 1
+    },
+    "text_bytes": {
+      "train": 37519728,
+      "validation": 4127734
+    },
+    "sha256": {
+      "train": "70b1ece61fe201300a3c08a6d0e17d5aa9deaee96471c655a16e09725bad1890",
+      "validation": "bd65ecd627b2412a8c5b28a0b78cbd1900c9095f67b7dab7c813fdb36649728e"
+    },
+    "split_method": "90/10 deterministic hash of normalized user prompt",
+    "upstream": "FreedomIntelligence/alpaca-gpt4-indonesian",
+    "purpose": "instruction tuning; synthetic data; not yet included in active pretraining run"
+  },
+  {
+    "dataset": "OpenAssistant/oasst1",
+    "revision": "fdf72ae0827c1cda404aff25b6603abec9e3399b",
+    "counts": {
+      "train": 3
+    },
+    "text_bytes": {
+      "train": 1897
+    },
+    "sha256": {
+      "train": "21783038ab972f4ecfc8254419c38c2870fc9aae488ca2fd412fe9c6942d3609",
+      "validation": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "split_method": "original upstream train/validation, checked for tree isolation",
+    "filtering": "Indonesian only; complete alternating paths; reject deleted/negative-review messages; best-ranked available Indonesian assistant reply; maximal paths",
+    "raw_indonesian_messages": {
+      "train": 12
+    },
+    "skipped": {}
+  }
+]

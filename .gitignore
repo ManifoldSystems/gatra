@@ -222,3 +222,11 @@ checkpoints/
 data/*
 !data/sample.jsonl
 !data/gatra-identity.jsonl
+!data/instruction/
+data/instruction/**
+!data/instruction/README.md
+!data/instruction/manifest.json
+!data/instruction/alpaca-id/
+!data/instruction/oasst1-id/
+!data/instruction/*/manifest.json
+!data/instruction/*/*.jsonl.gz
