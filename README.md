@@ -166,6 +166,21 @@ with a new context config; reset best-validation tracking when changing context.
 Existing byte bins remain usable. Increasing context still requires adaptation
 and does not guarantee better generation.
 
+### CUDA precision/batch benchmark
+
+```bash
+python scripts/benchmark_precision.py --config configs/gatra-10m.toml \
+  --checkpoint checkpoints/gatra-10m/latest.pt --batch 16 --precision fp16 \
+  --out checkpoints/precision-benchmark/fp16-16.json
+```
+
+Each invocation loads the same checkpoint into disposable model/optimizer state,
+warms up for 10 steps, then measures 20 steps. Compare `fp32` and `fp16` with
+batches 16, 32 and 64 while other GPU training is paused. Results include allocated
+memory, throughput, finite-gradient checks and skipped AMP updates. This is a
+short performance/stability probe, not evidence of equivalent convergence. It
+does not change the trainer's configured precision.
+
 ## Generate
 
 ```bash
