@@ -1,0 +1,121 @@
+{
+  "dataset": "OpenAssistant/oasst1",
+  "revision": "fdf72ae0827c1cda404aff25b6603abec9e3399b",
+  "license": "Apache-2.0",
+  "variant": "ready-for-export, all languages, all valid reply branches",
+  "split_method": "upstream splits; tree IDs checked disjoint; exact conversation dedup with validation priority",
+  "counts": {
+    "validation": 2092,
+    "train": 40754
+  },
+  "raw_messages": {
+    "validation": 4401,
+    "train": 84437
+  },
+  "raw_languages": {
+    "validation": {
+      "ru": 369,
+      "es": 1212,
+      "en": 2022,
+      "ca": 80,
+      "uk-UA": 53,
+      "zh": 134,
+      "it": 16,
+      "th": 100,
+      "fr": 179,
+      "de": 145,
+      "eu": 16,
+      "bn": 1,
+      "pt-BR": 38,
+      "vi": 8,
+      "ja": 16,
+      "hu": 12
+    },
+    "train": {
+      "en": 39283,
+      "es": 22763,
+      "de": 3050,
+      "ru": 7242,
+      "ja": 363,
+      "pt-BR": 1165,
+      "ca": 1158,
+      "fr": 2474,
+      "pl": 304,
+      "vi": 191,
+      "zh": 3314,
+      "hu": 75,
+      "ko": 24,
+      "eu": 250,
+      "it": 554,
+      "uk-UA": 587,
+      "id": 12,
+      "ar": 56,
+      "fi": 18,
+      "tr": 37,
+      "da": 44,
+      "th": 1460,
+      "sv": 1,
+      "cs": 12
+    }
+  },
+  "conversation_languages": {
+    "validation": {
+      "ru": 147,
+      "es": 677,
+      "en": 901,
+      "ca": 50,
+      "uk-UA": 20,
+      "zh": 54,
+      "it": 12,
+      "th": 37,
+      "fr": 76,
+      "de": 64,
+      "eu": 12,
+      "pt-BR": 23,
+      "vi": 6,
+      "ja": 9,
+      "hu": 4
+    },
+    "train": {
+      "en": 17868,
+      "es": 13073,
+      "de": 1366,
+      "ru": 2781,
+      "ja": 180,
+      "pt-BR": 561,
+      "ca": 735,
+      "fr": 1083,
+      "pl": 156,
+      "vi": 120,
+      "zh": 1367,
+      "hu": 47,
+      "ko": 15,
+      "eu": 182,
+      "it": 357,
+      "uk-UA": 216,
+      "id": 9,
+      "ar": 41,
+      "fi": 6,
+      "tr": 26,
+      "da": 33,
+      "th": 526,
+      "cs": 6
+    }
+  },
+  "text_bytes": {
+    "validation": 3138191,
+    "train": 60134417
+  },
+  "sha256": {
+    "validation": "b744a0ae5303aeda993b9b4c05e437b410295c3dabad529566343171e7e8b00d",
+    "train": "8b44d64b1519ced5c2c219699bf5be41d2b2065249863ea9b9a44fcdfe6df8eb"
+  },
+  "duplicates": {
+    "validation": 4,
+    "train": 65
+  },
+  "unique_messages_in_paths": {
+    "validation": 3730,
+    "train": 71347
+  }
+}

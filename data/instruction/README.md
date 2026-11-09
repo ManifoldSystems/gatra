@@ -9,6 +9,7 @@ does not by itself enable supervised chat fine-tuning.
 | --- | ---: | ---: |
 | Alpaca GPT-4 Indonesian | 45,007 | 4,961 |
 | OpenAssistant OASST1 Indonesian | 3 | 0 |
+| OpenAssistant OASST1 multilingual (alternative to Indonesian subset) | 40,754 | 2,092 |
 
 ## Files and use
 
@@ -73,3 +74,41 @@ Source revisions are pinned by default; `--alpaca-revision` and
 or `HF_TOKEN` environment variable. Credentials are not included in this repo.
 
 The acquisition script refuses to overwrite existing source directories.
+
+## Multilingual OpenAssistant
+
+`oasst1-multilingual/` contains all languages of the pinned OASST1 ready-for-export
+release (84,437 raw train messages and 4,401 raw validation messages). The larger
+161,443-message all-trees export includes incomplete and rejected trees and is
+not the input used here. Prepared conversation counts, byte sizes, language
+breakdowns, and checksums are recorded in this directory's manifest.
+
+This pinned ready-for-export release contains 25 distinct message-language tags;
+the prepared paths cover 23 root languages. The upstream project's 35-language
+description refers to its broader collection. Prepared training text is 60.13 MB
+and validation text is 3.14 MB (UTF-8, including repeated branch context).
+English and Spanish account for 17,868 and 13,073 training paths respectively.
+
+```bash
+python scripts/prepare_oasst_multilingual.py \
+  --out-dir data/instruction-rebuilt/oasst1-multilingual
+```
+
+All valid reply branches are retained, not only the highest-ranked answer.
+Complete root-to-assistant paths are emitted; shorter prefixes already covered
+by longer valid paths are omitted. Deleted, negative-review, empty, orphaned,
+cyclic, and malformed paths are excluded. Original tree splits are preserved;
+exact normalized conversation duplicates are removed with validation priority.
+Shared prefixes across sibling branches remain, so serialized text size includes
+repeated context. Message IDs, language labels, and ranks are preserved per path.
+
+Use this **instead of** `oasst1-id` in a mixture: the multilingual data already
+contains Indonesian and otherwise duplicates those messages. This is a
+conversation corpus, not a comprehensive or fact-checked knowledge database.
+For an Indonesia-first 10M model, an initial experiment can allocate around 5%
+of training tokens to multilingual conversations, then compare Indonesian and
+multilingual validation metrics. This is a proposed token ratio, not a configured
+file weight or an automatic addition to the ongoing pretraining run.
+
+The multilingual export carries the same upstream Apache-2.0 license and
+OpenAssistant attribution as the Indonesian subset.

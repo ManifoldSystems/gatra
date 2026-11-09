@@ -228,5 +228,6 @@ data/instruction/**
 !data/instruction/manifest.json
 !data/instruction/alpaca-id/
 !data/instruction/oasst1-id/
+!data/instruction/oasst1-multilingual/
 !data/instruction/*/manifest.json
 !data/instruction/*/*.jsonl.gz
