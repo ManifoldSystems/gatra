@@ -147,6 +147,25 @@ resume header in `train.log`. Ctrl+C stops the viewer, not the training process.
 
 Modes: `smoke` minutes, `study` 30-60m, `run` overnight. Time budget stops training cleanly with a checkpoint.
 
+### Longer-context checkpoint probe
+
+Before continuing a byte-tokenized model at a longer context, test checkpoint and
+optimizer loading plus finite forward/backward steps:
+
+```bash
+python scripts/probe_context.py --config configs/gatra-10m.toml \
+  --checkpoint checkpoints/gatra-10m/latest.pt --context 512
+```
+
+The probe keeps batch × context fixed, performs 15 disposable optimizer steps,
+and reports throughput over the final 10. It does not save the modified weights.
+Run it while other training is paused or stopped for a useful timing measurement.
+For the V100 run, context 512 / batch 16 passed at about 93K byte tokens/s and
+2,054 MiB peak allocated memory. Continued training resumes the original checkpoint
+with a new context config; reset best-validation tracking when changing context.
+Existing byte bins remain usable. Increasing context still requires adaptation
+and does not guarantee better generation.
+
 ## Generate
 
 ```bash
