@@ -24,10 +24,13 @@ does not include checkpoint writes, generation, or periodic validation.
 
 Relative to FP32 batch 16, FP16 batch 16 improves throughput 1.72x with the same
 token batch; FP16 batch 64 improves it 2.16x but quadruples tokens per update.
-The low-disruption next experiment is FP16 batch 16. Production training remains
-FP32 batch 16 until AMP is integrated into train/evaluation and scaler state is
-saved/restored in checkpoints. A larger batch also needs an explicit token-budget
-and learning-rate schedule decision.
+The low-disruption next experiment is FP16 batch 16. AMP is now integrated into
+training, evaluation and sample generation; scaler state is saved/restored in
+checkpoints. The production continuation `gatra-10m-expanded-ctx512-fp16` starts
+from step 52,500 with batch 16, context 512, LR 3e-5 and target step 88,138.
+Best-validation tracking starts fresh for the new precision run; the original
+checkpoint is retained. A larger batch also needs an explicit token-budget and
+learning-rate schedule decision.
 
 Reproduce with `scripts/benchmark_precision.py`; local raw outputs are in
 `checkpoints/precision-benchmark/results.json` and the server has one JSON file

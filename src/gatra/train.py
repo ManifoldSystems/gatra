@@ -5,6 +5,7 @@ import json
 import math
 import time
 import warnings
+from contextlib import nullcontext
 from dataclasses import asdict
 from pathlib import Path
 
@@ -98,17 +99,26 @@ def sample_generation(
         else:
             idx = torch.zeros((1, 1), dtype=torch.long, device=device)
         gen = config.generate
-        tokens = model.generate(
-            idx,
-            max_new_tokens=config.train.sample_tokens,
-            temperature=gen.temperature,
-            top_k=gen.top_k,
-            top_p=gen.top_p,
-        )
+        with autocast_context(config, device):
+            tokens = model.generate(
+                idx,
+                max_new_tokens=config.train.sample_tokens,
+                temperature=gen.temperature,
+                top_k=gen.top_k,
+                top_p=gen.top_p,
+            )
         return prompt, tokenizer.decode(tokens[0].tolist())
     finally:
         _restore_rng({"rng": rng}, device)
         model.train()
+
+
+def autocast_context(config: Config, device: torch.device):
+    if config.train.precision == "fp32":
+        return nullcontext()
+    if config.train.precision != "fp16" or device.type != "cuda":
+        raise ValueError("precision must be fp32, or fp16 with a CUDA device")
+    return torch.autocast("cuda", dtype=torch.float16)
 
 
 def print_sample(prompt: str, text: str) -> None:
@@ -123,7 +133,8 @@ def estimate_loss(model: Gatra, dataset: TokenDataset, config: Config, device: t
         losses = []
         for _ in range(config.train.eval_iters):
             x, y = dataset.get_batch(split, device)
-            _, loss = model(x, y)
+            with autocast_context(config, device):
+                _, loss = model(x, y)
             losses.append(loss.item())
         out[split] = sum(losses) / len(losses)
     model.train()
@@ -171,6 +182,7 @@ def save_checkpoint(
     tokens_seen: int = 0,
     best_val: float = float("inf"),
     device: torch.device | None = None,
+    scaler=None,
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -184,6 +196,8 @@ def save_checkpoint(
     }
     if device is not None:
         payload["rng"] = _rng_state(device)
+    if scaler is not None and scaler.is_enabled():
+        payload["scaler"] = scaler.state_dict()
     torch.save(payload, path)
 
 
@@ -302,6 +316,8 @@ def find_checkpoint(config: Config, which: str = "latest") -> Path:
 def train(config: Config, resume: Path | None = None, extra_iters: int | None = None) -> Path:
     info = resolve_device(config.device)
     device = info.device
+    autocast_context(config, device)  # Validate before allocating model/data.
+    scaler = torch.amp.GradScaler("cuda", enabled=config.train.precision == "fp16")
     if resume is None:
         torch.manual_seed(config.seed)
     dataset = TokenDataset(config)
@@ -326,6 +342,8 @@ def train(config: Config, resume: Path | None = None, extra_iters: int | None = 
         tokens_seen = int(payload.get("tokens_seen", start_step * config.train.batch_size * config.model.block_size))
         best_val = float(payload.get("best_val", payload.get("metrics", {}).get("val_loss", float("inf"))))
         _restore_rng(payload, device)
+        if scaler.is_enabled() and payload.get("scaler"):
+            scaler.load_state_dict(payload["scaler"])
         print(f"\n[RESUME] {resume}\n[STATE] [step: {start_step:,}] [tokens: {tokens_seen:,}]\n", flush=True)
 
     if extra_iters is not None:
@@ -335,6 +353,7 @@ def train(config: Config, resume: Path | None = None, extra_iters: int | None = 
     out_dir.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
     session_start_tokens = tokens_seen
+    skipped_updates = 0
     latest = out_dir / "latest.pt"
     best = out_dir / "best.pt"
     step = start_step
@@ -343,6 +362,7 @@ def train(config: Config, resume: Path | None = None, extra_iters: int | None = 
     print(
         f"\n[RUN] {config.name}\n"
         f"[MODEL] [params: {model.param_count() / 1e6:.3f}M] [device: {info}]\n"
+        f"[PRECISION] [{config.train.precision}] [FP32 master weights]\n"
         f"[DATA] [train tokens: {len(dataset.train_ids):,}] [val tokens: {len(dataset.val_ids):,}]\n"
         f"[BUDGET] [start: {start_step:,}] [target: {config.train.max_iters:,}]\n"
     )
@@ -391,6 +411,9 @@ def train(config: Config, resume: Path | None = None, extra_iters: int | None = 
             "session_tokens": session_tokens,
             "eta_s": eta_s,
             "vram_mb": vram,
+            "precision": config.train.precision,
+            "amp_scale": scaler.get_scale(),
+            "skipped_updates_session": skipped_updates,
         }
         eta = f"{eta_s / 60:.1f}m" if eta_s is not None else "--"
         memory = f"{vram:.0f} MiB" if vram is not None else "--"
@@ -399,7 +422,8 @@ def train(config: Config, resume: Path | None = None, extra_iters: int | None = 
             f"\n[STEP {step:,} / {config.train.max_iters:,}]{improved}\n"
             f"[LOSS]  [train: {losses['train']:.4f}] [val: {losses['val']:.4f}] [ppl: {metrics['ppl']:.2f}]\n"
             f"[SPEED] [tok/s: {tokens_per_sec:,.0f}] [elapsed: {elapsed / 60:.1f}m] [ETA: {eta}]\n"
-            f"[OPT]   [lr: {lr:.2e}] [GPU memory: {memory}]\n",
+            f"[OPT]   [lr: {lr:.2e}] [GPU memory: {memory}]\n"
+            f"[AMP]   [{config.train.precision}] [scale: {scaler.get_scale():g}] [skipped: {skipped_updates}]\n",
             flush=True,
         )
         if with_sample:
@@ -407,14 +431,14 @@ def train(config: Config, resume: Path | None = None, extra_iters: int | None = 
             metrics["sample_prompt"] = prompt
             metrics["sample"] = sample
             print_sample(prompt, sample)
-        save_checkpoint(
-            latest, model, optimizer, step, config, metrics, tokens_seen, best_val, device
-        )
         if losses["val"] < best_val:
             best_val = losses["val"]
             save_checkpoint(
-                best, model, optimizer, step, config, metrics, tokens_seen, best_val, device
+                best, model, optimizer, step, config, metrics, tokens_seen, best_val, device, scaler
             )
+        save_checkpoint(
+            latest, model, optimizer, step, config, metrics, tokens_seen, best_val, device, scaler
+        )
         with (out_dir / "metrics.jsonl").open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(metrics) + "\n")
 
@@ -426,11 +450,20 @@ def train(config: Config, resume: Path | None = None, extra_iters: int | None = 
         for group in optimizer.param_groups:
             group["lr"] = lr
         x, y = dataset.get_batch("train", device)
-        _, loss = model(x, y)
+        with autocast_context(config, device):
+            _, loss = model(x, y)
+        if not torch.isfinite(loss):
+            raise FloatingPointError(f"non-finite training loss at step {step}")
         optimizer.zero_grad(set_to_none=True)
-        loss.backward()
+        scaler.scale(loss).backward()
+        scaler.unscale_(optimizer)
         torch.nn.utils.clip_grad_norm_(model.parameters(), config.train.grad_clip)
-        optimizer.step()
+        previous_scale = scaler.get_scale()
+        scaler.step(optimizer)
+        scaler.update()
+        if scaler.get_scale() < previous_scale:
+            skipped_updates += 1
+            print(f"[AMP] [overflow: update skipped] [step: {step + 1}] [scale: {scaler.get_scale():g}]", flush=True)
         tokens_seen += config.train.batch_size * config.model.block_size
         completed = step + 1
         should_sample = config.train.sample_tokens > 0 and is_sample_step(completed, interval)
@@ -452,6 +485,7 @@ def train(config: Config, resume: Path | None = None, extra_iters: int | None = 
                 tokens_seen,
                 best_val,
                 device,
+                scaler,
             )
             return latest
         step = completed
@@ -466,6 +500,7 @@ def train(config: Config, resume: Path | None = None, extra_iters: int | None = 
         tokens_seen,
         best_val,
         device,
+        scaler,
     )
     print(f"\n[DONE] [step: {step:,}] [tokens: {tokens_seen:,}]\n[CHECKPOINT] {latest}\n", flush=True)
     return latest

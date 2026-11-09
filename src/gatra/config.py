@@ -86,6 +86,7 @@ class ModelConfig:
 
 @dataclass
 class TrainConfig:
+    precision: str = "fp32"
     batch_size: int = 16
     max_iters: int = 1000
     eval_interval: int = 100

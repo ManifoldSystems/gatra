@@ -181,6 +181,15 @@ memory, throughput, finite-gradient checks and skipped AMP updates. This is a
 short performance/stability probe, not evidence of equivalent convergence. It
 does not change the trainer's configured precision.
 
+To enable mixed precision in CUDA training, set `precision = "fp16"` under
+`[train]` in the TOML config (default: `"fp32"`). Training, validation and sample
+generation use autocast; model weights and AdamW state stay FP32. GradScaler
+state is saved and restored with checkpoints; older FP32 checkpoints start with
+a fresh scaler. Logs report scale and skipped updates for the current session.
+Step and token counters count attempted batches, including any overflow-skipped
+updates. FP16 requires CUDA. Keep batch size unchanged when comparing precision
+at the same token budget.
+
 ## Generate
 
 ```bash
