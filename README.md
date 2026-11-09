@@ -192,6 +192,23 @@ at the same token budget.
 
 ## Generate
 
+### Fixed-prompt checkpoint comparison
+
+```bash
+python scripts/evaluate_fixed.py \
+  --checkpoints checkpoints/gatra-10m-expanded-ctx512-fp16/best.pt \
+    checkpoints/gatra-10m-expanded-ctx512-fp16/latest.pt \
+  --bin-dir data/bin/gatra-10m-expanded-v1 --out checkpoints/eval-fixed-v1
+```
+
+The read-only evaluation uses FP32, identical seeded validation windows at
+context 256 (100 batches of 16), and 12 fixed Indonesian prompts with two seeds
+each. Generation uses the checkpoint's native context. Outputs include complete
+continuations, per-batch losses, checkpoint hashes and decoding settings in
+`results.json` and `samples.md`. Prompt outputs are exploratory, not a capability
+score; training-data contamination has not been checked. Compare checkpoints on
+the same validation bins rather than comparing logs from different mixtures.
+
 ```bash
 uv run gatra-generate --checkpoint checkpoints/gatra-smoke/latest.pt --prompt "Pagi itu"
 ```

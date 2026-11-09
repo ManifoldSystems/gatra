@@ -1,0 +1,14 @@
+[
+  {"id": "news", "category": "continuation", "prompt": "Pemerintah desa memperbaiki jembatan yang rusak agar warga dapat"},
+  {"id": "story", "category": "continuation", "prompt": "Pagi itu, Rina membawa payung karena langit mendung. Ketika hujan mulai turun, ia"},
+  {"id": "explanation", "category": "continuation", "prompt": "Tanaman membutuhkan air dan cahaya matahari untuk"},
+  {"id": "recipe", "category": "continuation", "prompt": "Untuk membuat nasi goreng sederhana, siapkan nasi, telur, dan bawang. Pertama,"},
+  {"id": "capital", "category": "qa", "prompt": "Pertanyaan: Apa ibu kota Jepang?\nJawaban:"},
+  {"id": "arithmetic", "category": "qa", "prompt": "Pertanyaan: Berapa hasil 2 + 3?\nJawaban:"},
+  {"id": "reading", "category": "qa", "prompt": "Budi memiliki dua kucing bernama Miko dan Milo.\nPertanyaan: Siapa nama kedua kucing Budi?\nJawaban:"},
+  {"id": "identity", "category": "qa", "prompt": "Pengguna: Siapa kamu?\nAsisten:"},
+  {"id": "list", "category": "instruction", "prompt": "Sebutkan tiga nama buah dalam bahasa Indonesia.\nJawaban:"},
+  {"id": "copy", "category": "instruction", "prompt": "Tulis ulang persis kalimat berikut: Saya suka membaca buku.\nJawaban:"},
+  {"id": "summary", "category": "instruction", "prompt": "Ringkas dalam satu kalimat: Dina pergi ke pasar. Ia membeli sayur dan buah, lalu pulang untuk memasak.\nRingkasan:"},
+  {"id": "translation", "category": "instruction", "prompt": "Terjemahkan ke bahasa Indonesia: Good morning.\nTerjemahan:"}
+]
