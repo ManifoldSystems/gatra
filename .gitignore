@@ -1,4 +1,6 @@
 # Byte-compiled / optimized / DLL files
+data/instruction/full-id-v1/
+data/raw/hf-indonesian/
 __pycache__/
 *.py[codz]
 *$py.class
