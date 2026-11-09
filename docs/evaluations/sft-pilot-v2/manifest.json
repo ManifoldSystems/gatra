@@ -1,0 +1,35 @@
+{
+  "source_checkpoint": "checkpoints/gatra-10m-expanded-ctx512-fp16/latest.pt",
+  "source_step": 88138,
+  "source_sha256": "1b49de24a79a4e609ad84a7ff4bc7037383308065ebbbf82a7499a5c72730576",
+  "source_tokens_seen": 722026496,
+  "epochs": 3,
+  "planned_steps": 1749,
+  "train_counts": {
+    "addition": 1466,
+    "copy": 1088,
+    "extraction": 5262,
+    "tydiqa-id": 1511
+  },
+  "validation_counts": {
+    "addition": 172,
+    "copy": 112,
+    "extraction": 570,
+    "tydiqa-id": 157
+  },
+  "train_filters": {
+    "prepared_input": true
+  },
+  "validation_filters": {
+    "prepared_input": true
+  },
+  "learning_rate": 1e-05,
+  "optimizer": "fresh AdamW",
+  "scaler": "fresh GradScaler",
+  "objective": "assistant-only CE; prompt and padding labels -100",
+  "step_counter": "SFT-local attempted batches",
+  "seed": 1337,
+  "quality": "Heuristic and limited spot-check filtering; not fully human verified",
+  "train_sha256": "a330eacf3e6afb05875779717a81bb7848fc5937540a90c1f0b34f33259fe55f",
+  "validation_sha256": "572df470504400e6cacb99c16a9b5a78613da0fccb1e14f66bf498e180b9d1d3"
+}

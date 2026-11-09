@@ -1,0 +1,22 @@
+[
+  {
+    "prompt": "Tulis ulang persis: Saya suka membaca buku.",
+    "text": "User: Tulis ulang persis: Saya suka membaca buku.\n\nAssistant: Saya suka membaca buku.\n"
+  },
+  {
+    "prompt": "Baca teks berikut:\nBudi memiliki dua kucing bernama Miko dan Milo.\n\nPertanyaan: Siapa nama kedua kucing Budi?",
+    "text": "User: Baca teks berikut:\nBudi memiliki dua kucing bernama Miko dan Milo.\n\nPertanyaan: Siapa nama kedua kucing Budi?\n\nAssistant: Miko\n"
+  },
+  {
+    "prompt": "Berapa hasil 2 + 3?",
+    "text": "User: Berapa hasil 2 + 3?\n\nAssistant: 4\n"
+  },
+  {
+    "prompt": "Apa ibu kota Jepang?",
+    "text": "User: Apa ibu kota Jepang?\n\nAssistant: Asia Tenggara\n"
+  },
+  {
+    "prompt": "Pagi itu, Rina membawa payung karena langit mendung. Lanjutkan ceritanya dalam satu kalimat.",
+    "text": "User: Pagi itu, Rina membawa payung karena langit mendung. Lanjutkan ceritanya dalam satu kalimat.\n\nAssistant: langit mendung.\n"
+  }
+]
