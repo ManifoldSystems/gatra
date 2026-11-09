@@ -1,5 +1,15 @@
 # SFT v2: single-line curriculum
 
+## Current decision
+
+User decision after reviewing these results: keep the findings as notes and
+pause further training experiments. No v3/replay or arithmetic experiment is
+scheduled. Preserve the base and SFT checkpoints for future comparisons.
+
+Future ideas, not active work: compare SFT with general-text replay to measure
+the task/fluency tradeoff, and study arithmetic separately rather than assuming
+additional mixed-data epochs will fix it.
+
 ## Completed paired evaluation
 
 Identical greedy FP32 decoding with newline stopping and a 128-byte output
