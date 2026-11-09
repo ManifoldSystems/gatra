@@ -63,6 +63,29 @@ Sastra.org and Junwatu. Non-commercial restriction applies.
 
 ## Run
 
+### Expanded training mixture
+
+`scripts/build_expanded_mix.py` preserves the original pretraining bins and adds
+deterministic group-sampled portions of all five additions, retaining their
+prepared splits. Output: `data/bin/gatra-10m-expanded-v1`, 400,797,686 train bytes
+and 40,279,496 validation bytes (byte tokens). Actual train additions: Corpus
+39,907,020; Alpaca 31,970,383; recipes 19,931,156; multilingual OASST 20,775,548;
+lexicon 7,951,125. The base remains approximately 70% of training tokens.
+
+This mixture excludes 1,041 Corpus candidate documents matching the documented
+gambling/markup/replacement-character filters. The raw audit candidates remain
+available. New sources are exact-deduplicated against base source documents and
+each other; all new validation text is reserved before selecting new train text.
+Semantic/near-duplicate leakage is not ruled out.
+
+`scripts/run_expanded_v100.py` is the server-specific continuation entry point.
+It waits for the earlier 5,000-step run, verifies its final checkpoint, preserves
+optimizer state, and resets best validation loss because the validation mixture
+has changed. It uses constant LR 3e-5, batch 32, context 256 and one expanded-bin
+volume equivalent of random-window training (48,926 extra steps). This is full-text
+continued pretraining, not assistant-only SFT. The recipe terms and lexicon's
+non-commercial restriction remain applicable to this experimental run.
+
 With the data extra installed and HF authentication configured:
 
 ```bash
