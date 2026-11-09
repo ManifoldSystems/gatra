@@ -231,3 +231,7 @@ data/instruction/**
 !data/instruction/oasst1-multilingual/
 !data/instruction/*/manifest.json
 !data/instruction/*/*.jsonl.gz
+!data/instruction/sft-pilot-v1/
+!data/instruction/sft-pilot-v1/README.md
+!data/eval/
+data/instruction/sft-pilot-v1/*.jsonl.gz

@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "max_sequence_bytes": 512,
+  "truncation": false,
+  "format": "User: {prompt}\n\nAssistant: {answer}\n",
+  "assistant_loss": "Mask target bytes before assistant_start_byte; include final newline. Shift labels by one in trainer.",
+  "counts": {
+    "cendol:validation": 1200,
+    "alpaca-id:validation": 1200,
+    "tydiqa-id:validation": 162,
+    "cendol:train": 12000,
+    "alpaca-id:train": 12000,
+    "tydiqa-id:train": 1538
+  },
+  "totals": {
+    "train": 25538,
+    "validation": 2562
+  },
+  "text_bytes": {
+    "train": 5871244,
+    "validation": 600566
+  },
+  "audit": {
+    "alpaca-id:seen": 49968,
+    "alpaca-id:eligible": 22324,
+    "alpaca-id:too_long": 27614,
+    "alpaca-id:repetition": 9,
+    "alpaca-id:encoding_or_html": 20,
+    "alpaca-id:spam_keyword": 1,
+    "tydiqa-id:seen": 5064,
+    "tydiqa-id:eligible": 1738,
+    "tydiqa-id:too_long": 3326,
+    "tydiqa-id:invalid_answer_span": 1203,
+    "cendol:upstream_nontrain_excluded": 59708,
+    "cendol:seen": 134084,
+    "cendol:eligible": 134047,
+    "cendol:too_long": 29,
+    "cendol:encoding_or_html": 1,
+    "cendol:spam_keyword": 7,
+    "cendol:duplicate_prompt": 3810,
+    "cendol:cap_excluded": 117037,
+    "alpaca-id:cap_excluded": 9122,
+    "tydiqa-id:split_conflict_removed": 20,
+    "tydiqa-id:duplicate_prompt": 18,
+    "alpaca-id:duplicate_prompt": 2
+  },
+  "sha256": {
+    "train": "ed5c74369cca84964d751f91aaf2f5d1e9ade44ae9eca6d083e0f7744e4d8e32",
+    "validation": "3190d1c847156e93ddf2004f7746205af1946e01ecc9826f6e79996bb0ad743a"
+  },
+  "templates": {
+    "id_qqp_nusantara_t2t": "paraphrase_1"
+  },
+  "sources": {
+    "tydiqa": {
+      "repo": "google-research-datasets/tydiqa",
+      "revision": "da78f23f9119363459acbaf46bf89426ff26c259",
+      "license_metadata": "apache-2.0"
+    },
+    "cendol": {
+      "repo": "indonlp/cendol_collection_v1",
+      "revision": "1851f107d765714836c938dbba5241a74bd6a2f6",
+      "license_metadata": "apache-2.0",
+      "files": [
+        "data/train-00000-of-00029-07539590a64c4a85.parquet"
+      ],
+      "subsets": [
+        "id_qqp_nusantara_t2t"
+      ]
+    },
+    "alpaca": {
+      "dataset": "Ichsan2895/alpaca-gpt4-indonesian",
+      "revision": "4790943e56ebac4626f0717e00a13e8d956645c2",
+      "counts": {
+        "train": 45007,
+        "validation": 4961,
+        "duplicates": 1
+      },
+      "text_bytes": {
+        "train": 37519728,
+        "validation": 4127734
+      },
+      "sha256": {
+        "train": "70b1ece61fe201300a3c08a6d0e17d5aa9deaee96471c655a16e09725bad1890",
+        "validation": "bd65ecd627b2412a8c5b28a0b78cbd1900c9095f67b7dab7c813fdb36649728e"
+      },
+      "split_method": "90/10 deterministic hash of normalized user prompt",
+      "upstream": "FreedomIntelligence/alpaca-gpt4-indonesian",
+      "purpose": "instruction tuning; synthetic data; not yet included in active pretraining run"
+    }
+  },
+  "limitations": [
+    "Heuristic filtering, not human-verified correctness.",
+    "Existing Alpaca training examples were already used in full-text pretraining; validation is not a contamination-free capability benchmark.",
+    "Cross-source semantic/near-duplicate contamination has not been ruled out.",
+    "Cendol collection license metadata does not replace upstream source provenance."
+  ]
+}
