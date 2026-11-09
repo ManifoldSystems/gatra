@@ -262,7 +262,10 @@ def _optimizer_state_compatible(opt_state: dict, model: Gatra) -> bool:
         entry = saved.get(idx, saved.get(str(idx)))
         if not entry:
             continue
-        for value in entry.values():
+        for name, value in entry.items():
+            # AdamW's step is a scalar counter, not a parameter-shaped moment.
+            if name == "step" and (not torch.is_tensor(value) or value.numel() == 1):
+                continue
             if torch.is_tensor(value) and value.shape != param.shape:
                 return False
     return True
