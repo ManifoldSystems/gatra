@@ -133,6 +133,18 @@ uv run gatra-continue --config configs/gatra-1m.toml --which best --max-time 30m
 
 Eval logs print `train` loss, `val` loss, `ppl` (e^val), and `tok/s`. Samples print at even quarters of `max_iters`, e.g. 500/1000/1500/2000.
 
+Logs use multiline `[STEP]`, `[LOSS]`, `[SPEED]`, and `[OPT]` blocks. Throughput
+counts only tokens processed in the current session, including evaluation and
+checkpoint overhead. For existing runs, view their JSON metrics in the same style:
+
+```bash
+python scripts/watch_training.py checkpoints/gatra-10m-expanded-v1
+```
+
+The viewer shows the last three evaluations then follows new entries. Use
+`--once --last 2` for a snapshot. It corrects legacy resumed throughput using the
+resume header in `train.log`. Ctrl+C stops the viewer, not the training process.
+
 Modes: `smoke` minutes, `study` 30-60m, `run` overnight. Time budget stops training cleanly with a checkpoint.
 
 ## Generate

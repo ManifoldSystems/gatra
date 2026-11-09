@@ -112,8 +112,7 @@ def sample_generation(
 
 
 def print_sample(prompt: str, text: str) -> None:
-    preview = text.replace("\n", " / ")
-    print(f"  sample [{prompt!r}]: {preview}")
+    print(f"\n[SAMPLE] [prompt: {prompt!r}]\n{text}\n", flush=True)
 
 
 @torch.no_grad()
@@ -327,7 +326,7 @@ def train(config: Config, resume: Path | None = None, extra_iters: int | None = 
         tokens_seen = int(payload.get("tokens_seen", start_step * config.train.batch_size * config.model.block_size))
         best_val = float(payload.get("best_val", payload.get("metrics", {}).get("val_loss", float("inf"))))
         _restore_rng(payload, device)
-        print(f"resumed from {resume} at step {start_step}, tokens_seen={tokens_seen}")
+        print(f"\n[RESUME] {resume}\n[STATE] [step: {start_step:,}] [tokens: {tokens_seen:,}]\n", flush=True)
 
     if extra_iters is not None:
         config.train.max_iters = start_step + extra_iters
@@ -335,19 +334,25 @@ def train(config: Config, resume: Path | None = None, extra_iters: int | None = 
     out_dir = config.checkpoint_dir
     out_dir.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
+    session_start_tokens = tokens_seen
     latest = out_dir / "latest.pt"
     best = out_dir / "best.pt"
     step = start_step
 
     mix = ", ".join(f"{name}={count}" for name, count in dataset.source_counts.items())
     print(
-        f"{config.name}: {model.param_count() / 1e6:.3f}M params, device={info}, "
-        f"train_tokens={len(dataset.train_ids)}, val_tokens={len(dataset.val_ids)}"
+        f"\n[RUN] {config.name}\n"
+        f"[MODEL] [params: {model.param_count() / 1e6:.3f}M] [device: {info}]\n"
+        f"[DATA] [train tokens: {len(dataset.train_ids):,}] [val tokens: {len(dataset.val_ids):,}]\n"
+        f"[BUDGET] [start: {start_step:,}] [target: {config.train.max_iters:,}]\n"
     )
     if mix:
-        print(f"data mix: {mix}")
+        print("[DATA MIX]")
+        for name, count in dataset.source_counts.items():
+            print(f"  [{name}] [docs: {count:,}]")
+        print()
     if dataset.duplicates:
-        print(f"dropped {dataset.duplicates} duplicate docs across sources")
+        print(f"[DEDUP] [dropped: {dataset.duplicates:,} documents]\n")
 
     if start_step >= config.train.max_iters:
         print(
@@ -364,7 +369,10 @@ def train(config: Config, resume: Path | None = None, extra_iters: int | None = 
         nonlocal best_val
         losses = estimate_loss(model, dataset, config, device)
         elapsed = time.perf_counter() - started
-        tokens_per_sec = tokens_seen / max(elapsed, 1e-6)
+        session_tokens = tokens_seen - session_start_tokens
+        tokens_per_sec = session_tokens / max(elapsed, 1e-6)
+        remaining_tokens = max(0, config.train.max_iters - step) * tokens_per_step(config)
+        eta_s = remaining_tokens / tokens_per_sec if tokens_per_sec > 0 else None
         vram = None
         if device.type == "cuda":
             vram = torch.cuda.max_memory_allocated() / 1024**2
@@ -380,11 +388,19 @@ def train(config: Config, resume: Path | None = None, extra_iters: int | None = 
             "tokens_seen": tokens_seen,
             "tokens_per_sec": tokens_per_sec,
             "elapsed_s": elapsed,
+            "session_tokens": session_tokens,
+            "eta_s": eta_s,
             "vram_mb": vram,
         }
+        eta = f"{eta_s / 60:.1f}m" if eta_s is not None else "--"
+        memory = f"{vram:.0f} MiB" if vram is not None else "--"
+        improved = " [NEW BEST]" if losses['val'] < best_val else ""
         print(
-            f"step {step}: train {losses['train']:.4f} val {losses['val']:.4f} "
-            f"ppl {metrics['ppl']:.2f} tok/s {tokens_per_sec:.0f}"
+            f"\n[STEP {step:,} / {config.train.max_iters:,}]{improved}\n"
+            f"[LOSS]  [train: {losses['train']:.4f}] [val: {losses['val']:.4f}] [ppl: {metrics['ppl']:.2f}]\n"
+            f"[SPEED] [tok/s: {tokens_per_sec:,.0f}] [elapsed: {elapsed / 60:.1f}m] [ETA: {eta}]\n"
+            f"[OPT]   [lr: {lr:.2e}] [GPU memory: {memory}]\n",
+            flush=True,
         )
         if with_sample:
             prompt, sample = sample_generation(model, dataset, config, device)
@@ -422,10 +438,10 @@ def train(config: Config, resume: Path | None = None, extra_iters: int | None = 
             log_eval(completed, lr, with_sample=should_sample)
         elif should_sample:
             prompt, sample = sample_generation(model, dataset, config, device)
-            print(f"step {completed} sample")
+            print(f"\n[STEP {completed:,}] [GENERATE]")
             print_sample(prompt, sample)
         if config.max_time_seconds is not None and time.perf_counter() - started >= config.max_time_seconds:
-            print(f"time budget reached after {completed} steps")
+            print(f"\n[STOP] [time budget reached] [step: {completed:,}]", flush=True)
             save_checkpoint(
                 latest,
                 model,
@@ -451,6 +467,7 @@ def train(config: Config, resume: Path | None = None, extra_iters: int | None = 
         best_val,
         device,
     )
+    print(f"\n[DONE] [step: {step:,}] [tokens: {tokens_seen:,}]\n[CHECKPOINT] {latest}\n", flush=True)
     return latest
 
 
