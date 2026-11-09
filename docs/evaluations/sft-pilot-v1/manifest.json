@@ -1,0 +1,40 @@
+{
+  "source_checkpoint": "checkpoints/gatra-10m-expanded-ctx512-fp16/latest.pt",
+  "source_step": 88138,
+  "source_sha256": "1b49de24a79a4e609ad84a7ff4bc7037383308065ebbbf82a7499a5c72730576",
+  "source_tokens_seen": 722026496,
+  "epochs": 2,
+  "planned_steps": 814,
+  "train_counts": {
+    "cendol": 1000,
+    "alpaca-id": 4000,
+    "tydiqa-id": 1511
+  },
+  "validation_counts": {
+    "cendol": 200,
+    "alpaca-id": 200,
+    "tydiqa-id": 157
+  },
+  "train_filters": {
+    "long_answer": 1753,
+    "unsupported_media_or_markup": 483,
+    "other_model_identity": 7,
+    "source_cap": 16783,
+    "spotcheck_unsupported_answer": 1
+  },
+  "validation_filters": {
+    "long_answer": 181,
+    "unsupported_media_or_markup": 46,
+    "source_cap": 1777,
+    "other_model_identity": 1
+  },
+  "learning_rate": 1e-05,
+  "optimizer": "fresh AdamW",
+  "scaler": "fresh GradScaler",
+  "objective": "assistant-only CE; prompt and padding labels -100",
+  "step_counter": "SFT-local attempted batches",
+  "seed": 1337,
+  "quality": "Heuristic and limited spot-check filtering; not fully human verified",
+  "train_sha256": "2d202eed83af6985d63e4c9c380e46eda842118d1a1c4036c63295e8f2f185ce",
+  "validation_sha256": "5e653ffcbea59ecefc1b9b431aab1b486b0ffac68e47b7bef66431cc9abcadf4"
+}

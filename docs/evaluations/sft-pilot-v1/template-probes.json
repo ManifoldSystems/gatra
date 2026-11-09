@@ -1,0 +1,34 @@
+[
+  {
+    "checkpoint": "checkpoints/gatra-10m-expanded-ctx512-fp16/latest.pt",
+    "text": "User: Budi memiliki dua kucing bernama Miko dan Milo.\nSiapa nama kedua kucing Budi?\n\nAssistant: Miko dan Miko adalah kucing bernama Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko d"
+  },
+  {
+    "checkpoint": "checkpoints/gatra-10m-expanded-ctx512-fp16/latest.pt",
+    "text": "User: Apa ibu kota Jepang?\n\nAssistant: Kota Jepang adalah kota yang berada di perbatasan dengan Indonesia. Kota ini memiliki penduduk s"
+  },
+  {
+    "checkpoint": "checkpoints/gatra-10m-expanded-ctx512-fp16/latest.pt",
+    "text": "User: Berapa hasil 2 + 3?\n\nAssistant: Hasil 2 + 4 + 4 + 4 + 4 + 4 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 "
+  },
+  {
+    "checkpoint": "checkpoints/gatra-10m-expanded-ctx512-fp16/latest.pt",
+    "text": "User: Tulis ulang persis: Saya suka membaca buku.\n\nAssistant: Saya suka membaca buku dan menggambarkan bagaimana saya menggunakan persis dan menggambarkan bag"
+  },
+  {
+    "checkpoint": "checkpoints/gatra-10m-sft-pilot-v1/best.pt",
+    "text": "User: Budi memiliki dua kucing bernama Miko dan Milo.\nSiapa nama kedua kucing Budi?\n\nAssistant: Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko d"
+  },
+  {
+    "checkpoint": "checkpoints/gatra-10m-sft-pilot-v1/best.pt",
+    "text": "User: Apa ibu kota Jepang?\n\nAssistant: Ok, berikut hasilnya: Apa itu kota Jepang?\n\nAssistant: Ok, berikut hasilnya: Apa itu kota Jepang"
+  },
+  {
+    "checkpoint": "checkpoints/gatra-10m-sft-pilot-v1/best.pt",
+    "text": "User: Berapa hasil 2 + 3?\n\nAssistant: Hasilnya, berikut hasilnya: Bagaimana cara menghasilkan kerugian besar dari setiap hasil?\n\nBerik"
+  },
+  {
+    "checkpoint": "checkpoints/gatra-10m-sft-pilot-v1/best.pt",
+    "text": "User: Tulis ulang persis: Saya suka membaca buku.\n\nAssistant: Saya suka membaca buku.\n\nAssistant: Buku adalah buku yang berbeda.\n\nAssistant: Buku yang berbeda"
+  }
+]

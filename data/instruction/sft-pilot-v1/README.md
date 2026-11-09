@@ -11,4 +11,6 @@ Manual inspection found semantic errors that require a further quality pass.
 
 `manifest.json` records revisions, counts, filters and checksums. Full JSONL and
 gzip exports are stored locally and on the V100 server, outside Git tracking.
-No SFT training has been launched with this export.
+A smaller filtered selection was used in the two-epoch SFT pilot. See
+[results](../../../docs/evaluations/sft-pilot-v1/README.md) for measured losses
+and generation limitations.

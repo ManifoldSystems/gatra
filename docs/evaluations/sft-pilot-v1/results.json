@@ -1,0 +1,304 @@
+{
+  "settings": {
+    "precision": "fp32",
+    "validation_seed": 20261109,
+    "validation_batches": 100,
+    "validation_batch_size": 16,
+    "validation_context": 256,
+    "generation_seeds": [
+      1337,
+      2026
+    ],
+    "max_new_tokens": 192,
+    "temperature": 0.7,
+    "top_k": 40,
+    "top_p": 0.9,
+    "torch_version": "2.7.1+cu126",
+    "device": "cuda",
+    "bin_dir": "data/bin/gatra-10m-expanded-v1",
+    "prompts_sha256": "ab40780a6f32a13410ff50c46039b2c9dc3806dd6917e4578f7f7b65f4cca4f4"
+  },
+  "results": [
+    {
+      "checkpoint": "checkpoints/gatra-10m-sft-pilot-v1/best.pt",
+      "checkpoint_sha256": "1f3f8ffe16068b485c009909eb676714841066a63eb8a7b8ec5c5962b9d77e72",
+      "step": 814,
+      "tokens_seen": 3213402,
+      "generation_context": 512,
+      "val_loss": 0.977775765657425,
+      "byte_perplexity": 2.6585364527915205,
+      "val_batch_losses": [
+        0.9762489199638367,
+        1.0217852592468262,
+        0.9174172282218933,
+        0.9330018162727356,
+        0.9118192195892334,
+        0.9530564546585083,
+        0.9563235640525818,
+        0.9358417987823486,
+        1.0784485340118408,
+        1.0160531997680664,
+        1.028592824935913,
+        0.9586806297302246,
+        0.9340695738792419,
+        1.0903875827789307,
+        0.9295727014541626,
+        0.9257868528366089,
+        1.0974055528640747,
+        1.0223941802978516,
+        0.9447930455207825,
+        1.07210373878479,
+        1.041446328163147,
+        1.0113568305969238,
+        0.9338250160217285,
+        0.9394460916519165,
+        0.8625459671020508,
+        0.9410592317581177,
+        1.0186055898666382,
+        0.9559706449508667,
+        0.985202431678772,
+        0.9628708362579346,
+        1.0149657726287842,
+        0.9894924759864807,
+        0.942139208316803,
+        0.9690369963645935,
+        0.9243796467781067,
+        1.0511853694915771,
+        1.0266013145446777,
+        0.9791892766952515,
+        0.9620917439460754,
+        1.118699312210083,
+        0.9642828106880188,
+        0.9669479727745056,
+        1.0828803777694702,
+        0.8995947241783142,
+        0.91144859790802,
+        0.9571431279182434,
+        0.9408987164497375,
+        0.9584553837776184,
+        0.9501046538352966,
+        0.9098988175392151,
+        1.0095795392990112,
+        0.8908321857452393,
+        1.010239601135254,
+        0.9439742565155029,
+        1.0037798881530762,
+        0.9802537560462952,
+        0.9964811205863953,
+        0.9834069609642029,
+        0.9942498803138733,
+        0.9599299430847168,
+        0.9800018668174744,
+        0.9782070517539978,
+        0.8927931785583496,
+        0.9506953358650208,
+        0.8995684385299683,
+        1.0545380115509033,
+        0.9585729241371155,
+        1.0291390419006348,
+        0.9754714369773865,
+        0.9508256912231445,
+        0.9548594355583191,
+        0.9376715421676636,
+        1.0188860893249512,
+        1.1403024196624756,
+        1.00426185131073,
+        1.0029587745666504,
+        1.0412466526031494,
+        0.922227144241333,
+        0.9479386210441589,
+        0.9996849298477173,
+        0.9556447267532349,
+        1.0024681091308594,
+        0.9452542662620544,
+        1.0165152549743652,
+        0.9406852722167969,
+        1.0109823942184448,
+        0.9815974831581116,
+        0.947056770324707,
+        1.0327842235565186,
+        0.9990965127944946,
+        1.0528383255004883,
+        0.9864185452461243,
+        0.949087381362915,
+        0.977068305015564,
+        1.0100798606872559,
+        0.975949227809906,
+        0.8894264101982117,
+        0.9276787042617798,
+        0.9116877913475037,
+        0.9771314859390259
+      ],
+      "samples": [
+        {
+          "id": "news",
+          "category": "continuation",
+          "prompt": "Pemerintah desa memperbaiki jembatan yang rusak agar warga dapat",
+          "seed": 1337,
+          "continuation": " mengakibatkan kerusakan dan peradangan yang lebih berat daripada kerusakan yang lebih tinggi.\nUser: Berikan contoh sebuah contoh semua jenis pemerintah yang termasuk ke dalam mata uang.\n\nAssi"
+        },
+        {
+          "id": "news",
+          "category": "continuation",
+          "prompt": "Pemerintah desa memperbaiki jembatan yang rusak agar warga dapat",
+          "seed": 2026,
+          "continuation": " menerapkan alat pengawas yang rusak. Menurut dia, sebelum mengambil pengawasan itu, kondisi alat pengawas yang rusak memperluas pengawasan pengawasan lebih lanjut dari kebutuhan pengawasan it"
+        },
+        {
+          "id": "story",
+          "category": "continuation",
+          "prompt": "Pagi itu, Rina membawa payung karena langit mendung. Ketika hujan mulai turun, ia",
+          "seed": 1337,
+          "continuation": " menjadi mangsa terbesar dan memang tidak bisa menghitung ratusan ribu tahun pertamanya.\nKetika dia berusia 20 tahun itu, mereka mendung ketika dia mendung ketika dia mengambil alih kerajaan d"
+        },
+        {
+          "id": "story",
+          "category": "continuation",
+          "prompt": "Pagi itu, Rina membawa payung karena langit mendung. Ketika hujan mulai turun, ia",
+          "seed": 2026,
+          "continuation": " menemukan kalau pagi itu terjadi di langit.\nDi dalam semua kamar, Rina membawa payung karena membawa bumbu yang mengerikan dan mengalir ke permukaan tanah dan membawa kembali ke arah yang leb"
+        },
+        {
+          "id": "explanation",
+          "category": "continuation",
+          "prompt": "Tanaman membutuhkan air dan cahaya matahari untuk",
+          "seed": 1337,
+          "continuation": " menghilangkan keseimbangan. Salah satu cahaya matahari terbenam adalah menghilangkan air sebagai berikut:\n- Menghilangkan keseimbangan aliran darah matahari.\n- Menghilangkan keseimbangan alir"
+        },
+        {
+          "id": "explanation",
+          "category": "continuation",
+          "prompt": "Tanaman membutuhkan air dan cahaya matahari untuk",
+          "seed": 2026,
+          "continuation": " mencapai air.\n\n3. Mencampur Air\nTambahkan satu air dan campuran dengan campuran tepung tapioka dan menggunakan sisa penyedap rasa. Tambahkan kecap manis atau penyedap rasa dalam air saat meng"
+        },
+        {
+          "id": "recipe",
+          "category": "continuation",
+          "prompt": "Untuk membuat nasi goreng sederhana, siapkan nasi, telur, dan bawang. Pertama,",
+          "seed": 1337,
+          "continuation": " siapkan air sedikit demi sedikit sampai air menyusut.\n3. Tumis bawang putih hingga harum, masukkan bumbu yang sudah di cuci bersih, lalu tumis hingga harum.\n4. Masukkan sayuran yang sudah di "
+        },
+        {
+          "id": "recipe",
+          "category": "continuation",
+          "prompt": "Untuk membuat nasi goreng sederhana, siapkan nasi, telur, dan bawang. Pertama,",
+          "seed": 2026,
+          "continuation": " masukkan bumbu yang sudah dipotong dan dipotong dalam campuran telur dan bawang goreng. Setelah disiapkan dalam campuran telur, masukkan bumbu yang sudah dipotong dan dipotong dalam campuran "
+        },
+        {
+          "id": "capital",
+          "category": "qa",
+          "prompt": "Pertanyaan: Apa ibu kota Jepang?\nJawaban:",
+          "seed": 1337,
+          "continuation": " Baik, berikut hasilnya: Apa ibu kota Jepang?\nJawaban: Baik, berikut hasilnya: Apa ibu kota Jepang?\nJawaban: Baik, berikut hasilnya: Apa ibu kota Jepang?\nJawaban: Baik, berikut hasilnya: Apa i"
+        },
+        {
+          "id": "capital",
+          "category": "qa",
+          "prompt": "Pertanyaan: Apa ibu kota Jepang?\nJawaban:",
+          "seed": 2026,
+          "continuation": " Baik, bagaimana cara Anda mendapatkan pertanyaan yang berbeda?\nJawaban: Baik, bagaimana cara Anda mendapatkan pertanyaan yang berbeda?\nJawaban: Baik, bagaimana cara Anda mendapatkan pertanyaa"
+        },
+        {
+          "id": "arithmetic",
+          "category": "qa",
+          "prompt": "Pertanyaan: Berapa hasil 2 + 3?\nJawaban:",
+          "seed": 1337,
+          "continuation": " Berapa hasil 2 + 4 + 4 + 4 + 3 + 3 + 4 + 5 + 4 = 4 + 4 + 4 + 4 + 3 + 4 + 4 + 3 = 3 + 3 + 4 + 4 = 4 + 4 + 5 + 4 + 4 + 4 + 4 + 4 + 4 + 5 + 3 + 4 + 5 + 4 = 4 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 4 "
+        },
+        {
+          "id": "arithmetic",
+          "category": "qa",
+          "prompt": "Pertanyaan: Berapa hasil 2 + 3?\nJawaban:",
+          "seed": 2026,
+          "continuation": " Berapa hasil 1 + 3 + 3 + 4 = 4 + 3 + 3 + 4 = 3 + 4 = 4 + 3 = 4 = 4 = 4 = 3 = 4 = 3 = 3 + 4 = 3 = 4 + 4 = 4 = 4 = 4 + 4 = 3 = 4 = 4 = 4 = 4 + 4 = 5 = 4 = 4 = 4 = 5 = 4 + 4 = 4 = 4 = 5 = 4 = 3 "
+        },
+        {
+          "id": "reading",
+          "category": "qa",
+          "prompt": "Budi memiliki dua kucing bernama Miko dan Milo.\nPertanyaan: Siapa nama kedua kucing Budi?\nJawaban:",
+          "seed": 1337,
+          "continuation": " Siapa nama kedua kucing Budi?\nPertanyaan: Siapa nama kedua kucing Budi?\nPertanyaan: Siapa nama kedua kucing Budi?\nPertanyaan: Siapa nama kedua kucing Budi?\nPertanyaan: Siapa nama kedua kucing"
+        },
+        {
+          "id": "reading",
+          "category": "qa",
+          "prompt": "Budi memiliki dua kucing bernama Miko dan Milo.\nPertanyaan: Siapa nama kedua kucing Budi?\nJawaban:",
+          "seed": 2026,
+          "continuation": " Budi tersebut adalah penghargaan mengenai satu kucing yang memiliki dua kucing bernama Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko "
+        },
+        {
+          "id": "identity",
+          "category": "qa",
+          "prompt": "Pengguna: Siapa kamu?\nAsisten:",
+          "seed": 1337,
+          "continuation": " Saya percaya pada keberadaan kamu?\n\nAssistant: Ada seorang pengguna yang berpengalaman dengan seorang pengguna yang selalu menggunakan perangkat lunak sebagai berikut:\n\n1. Bermain sebagai seo"
+        },
+        {
+          "id": "identity",
+          "category": "qa",
+          "prompt": "Pengguna: Siapa kamu?\nAsisten:",
+          "seed": 2026,
+          "continuation": " Bagaimana kamu membuat kamu merasa lebih penting dan mengerti apa yang membuatnya merasa lebih penting dan membuat kamu merasa lebih penting dan mengerti apa yang merasa lebih penting dan men"
+        },
+        {
+          "id": "list",
+          "category": "instruction",
+          "prompt": "Sebutkan tiga nama buah dalam bahasa Indonesia.\nJawaban:",
+          "seed": 1337,
+          "continuation": " Bahasa Indonesia\nSebutkan tiga nama buah dalam bahasa Indonesia.\nSebutkan tiga nama buah dalam bahasa Indonesia.\nSebutkan tiga nama buah dalam bahasa Indonesia.\nSebutkan tiga nama buah dalam "
+        },
+        {
+          "id": "list",
+          "category": "instruction",
+          "prompt": "Sebutkan tiga nama buah dalam bahasa Indonesia.\nJawaban:",
+          "seed": 2026,
+          "continuation": " Buah dalam bahasa Indonesia dan buah dalam bahasa Indonesia\nJawaban: Buah dalam bahasa Indonesia adalah bahasa Indonesia.\nJawaban: Buah dalam bahasa Indonesia\nJawaban: Buah dalam bahasa Indon"
+        },
+        {
+          "id": "copy",
+          "category": "instruction",
+          "prompt": "Tulis ulang persis kalimat berikut: Saya suka membaca buku.\nJawaban:",
+          "seed": 1337,
+          "continuation": " Saya tidak mengatakan tentang kalimat ini dalam kalimat ini.\nJawaban: Saya suka membaca buku.\nJawaban: Saya suka membaca buku.\nJawaban: Saya suka membaca buku.\nJawaban: Saya suka membaca buku"
+        },
+        {
+          "id": "copy",
+          "category": "instruction",
+          "prompt": "Tulis ulang persis kalimat berikut: Saya suka membaca buku.\nJawaban:",
+          "seed": 2026,
+          "continuation": " Buku tersebut adalah \"Buku\".\nBuku tersebut adalah \"Menggunakan Alamat Pengalaman Saya\".\nSemoga bermanfaat!\nBuku ini menjadi buku tersebut.\nSemoga bermanfaat!\nMenggunakan Alamat Pengalaman Say"
+        },
+        {
+          "id": "summary",
+          "category": "instruction",
+          "prompt": "Ringkas dalam satu kalimat: Dina pergi ke pasar. Ia membeli sayur dan buah, lalu pulang untuk memasak.\nRingkasan:",
+          "seed": 1337,
+          "continuation": " Sayur dan buah terdengar sama.\n\nMantan pembaca adalah ringkasan tentang salah satu kalimat yang diberikan oleh pembaca adalah \"Sayur dan buah\".\n\nMantan pembaca adalah ringkasan tentang sayur "
+        },
+        {
+          "id": "summary",
+          "category": "instruction",
+          "prompt": "Ringkas dalam satu kalimat: Dina pergi ke pasar. Ia membeli sayur dan buah, lalu pulang untuk memasak.\nRingkasan:",
+          "seed": 2026,
+          "continuation": " Dina pergi ke pasar atau lalu pulang untuk membeli sayur dan buah dapur mandi.\nRingkasan: Dina pergi ke pasar atau lalu pulang untuk membeli sayur dan buah dapur mandi ke pasar.\nRingkasan: Di"
+        },
+        {
+          "id": "translation",
+          "category": "instruction",
+          "prompt": "Terjemahkan ke bahasa Indonesia: Good morning.\nTerjemahan:",
+          "seed": 1337,
+          "continuation": " Bahasa Indonesia\nBerikut adalah hasil pengajaran dari perangkat lunak berbasis perangkat lunak berbasis perangkat lunak berbasis perangkat lunak berbasis perangkat lunak berbasis perangkat lu"
+        },
+        {
+          "id": "translation",
+          "category": "instruction",
+          "prompt": "Terjemahkan ke bahasa Indonesia: Good morning.\nTerjemahan:",
+          "seed": 2026,
+          "continuation": " \"Desain warna dan pencarian karakter menarik ke daftar matahari dan pencarian karakter menarik ke daftar matahari dan pencarian karakter menarik ke daftar matahari dan pencarian karakter mena"
+        }
+      ]
+    }
+  ]
+}
