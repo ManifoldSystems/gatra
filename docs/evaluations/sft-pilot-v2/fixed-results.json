@@ -1,0 +1,304 @@
+{
+  "settings": {
+    "precision": "fp32",
+    "validation_seed": 20261109,
+    "validation_batches": 100,
+    "validation_batch_size": 16,
+    "validation_context": 256,
+    "generation_seeds": [
+      1337,
+      2026
+    ],
+    "max_new_tokens": 192,
+    "temperature": 0.7,
+    "top_k": 40,
+    "top_p": 0.9,
+    "torch_version": "2.7.1+cu126",
+    "device": "cuda",
+    "bin_dir": "data/bin/gatra-10m-expanded-v1",
+    "prompts_sha256": "ab40780a6f32a13410ff50c46039b2c9dc3806dd6917e4578f7f7b65f4cca4f4"
+  },
+  "results": [
+    {
+      "checkpoint": "checkpoints/gatra-10m-sft-pilot-v2/best.pt",
+      "checkpoint_sha256": "a6a870950b69e419511a0bce4430467d99406094d1106c040b1f892c50adc389",
+      "step": 1749,
+      "tokens_seen": 4572801,
+      "generation_context": 512,
+      "val_loss": 1.005748100876808,
+      "byte_perplexity": 2.73395177970543,
+      "val_batch_losses": [
+        1.001380205154419,
+        1.0497897863388062,
+        0.9483776092529297,
+        0.9592112302780151,
+        0.9508463144302368,
+        0.9834408164024353,
+        0.9848068356513977,
+        0.9607599973678589,
+        1.1048988103866577,
+        1.0433515310287476,
+        1.0544788837432861,
+        0.9886936545372009,
+        0.9540436267852783,
+        1.1115261316299438,
+        0.9542834162712097,
+        0.9592631459236145,
+        1.124170184135437,
+        1.059434413909912,
+        0.961823582649231,
+        1.1035583019256592,
+        1.0747246742248535,
+        1.0449750423431396,
+        0.9608530402183533,
+        0.9718487858772278,
+        0.8787062168121338,
+        0.9748489856719971,
+        1.0437471866607666,
+        0.9918255805969238,
+        1.0062203407287598,
+        0.9945406913757324,
+        1.0419925451278687,
+        1.0225461721420288,
+        0.9690354466438293,
+        1.0009561777114868,
+        0.9546810388565063,
+        1.075769066810608,
+        1.052995204925537,
+        1.0047039985656738,
+        0.986714243888855,
+        1.152812123298645,
+        0.9931477308273315,
+        0.9902904033660889,
+        1.1158312559127808,
+        0.9249964952468872,
+        0.9313865900039673,
+        0.9860702157020569,
+        0.9613051414489746,
+        0.97763592004776,
+        0.9732329845428467,
+        0.9297929406166077,
+        1.0356731414794922,
+        0.9164350032806396,
+        1.0377382040023804,
+        0.9667587280273438,
+        1.0438363552093506,
+        1.0138955116271973,
+        1.0252196788787842,
+        1.0105377435684204,
+        1.0284724235534668,
+        0.983377993106842,
+        1.0145580768585205,
+        0.9963361024856567,
+        0.9174238443374634,
+        0.9763950705528259,
+        0.9299557209014893,
+        1.0863840579986572,
+        0.9838175177574158,
+        1.0785253047943115,
+        0.999576985836029,
+        0.9711251258850098,
+        0.9797991514205933,
+        0.9689988493919373,
+        1.0360454320907593,
+        1.1678466796875,
+        1.0293922424316406,
+        1.0228281021118164,
+        1.0732266902923584,
+        0.9549710750579834,
+        0.9750332832336426,
+        1.0291531085968018,
+        0.9823759198188782,
+        1.051623821258545,
+        0.9687842130661011,
+        1.0464664697647095,
+        0.9655569195747375,
+        1.0352665185928345,
+        1.0148886442184448,
+        0.9713407754898071,
+        1.0629196166992188,
+        1.0276892185211182,
+        1.0796990394592285,
+        1.0117895603179932,
+        0.9755346179008484,
+        1.0103425979614258,
+        1.0386078357696533,
+        1.000495433807373,
+        0.9193457961082458,
+        0.9552817940711975,
+        0.9393233060836792,
+        1.0178160667419434
+      ],
+      "samples": [
+        {
+          "id": "news",
+          "category": "continuation",
+          "prompt": "Pemerintah desa memperbaiki jembatan yang rusak agar warga dapat",
+          "seed": 1337,
+          "continuation": " menggunakan sekitar 10 meter di atas lantai kendaraan.\nPemerintah desa memperkirakan pemerintah desa memperkirakan sekitar 10 meter di atas lantai kendaraan.\nDi atas lantai kendaraan, terdapa"
+        },
+        {
+          "id": "news",
+          "category": "continuation",
+          "prompt": "Pemerintah desa memperbaiki jembatan yang rusak agar warga dapat",
+          "seed": 2026,
+          "continuation": " menembus jalan tol dan menghubungkan kota-kota di sekitar ruas jalan tol dan menghubungkan kota-kota di sekitar ruas jalan tol dan menembus jalan tol dan menembus jalan tol dan menembus jalan"
+        },
+        {
+          "id": "story",
+          "category": "continuation",
+          "prompt": "Pagi itu, Rina membawa payung karena langit mendung. Ketika hujan mulai turun, ia",
+          "seed": 1337,
+          "continuation": " menjadi mangrove besar. Pada akhir tahun 1914, Rina membawa payung karena langit mendung. Langit mendung mendung mendung. Rina menjadi mangrove besar. Rina membawa payung karena langit mendun"
+        },
+        {
+          "id": "story",
+          "category": "continuation",
+          "prompt": "Pagi itu, Rina membawa payung karena langit mendung. Ketika hujan mulai turun, ia",
+          "seed": 2026,
+          "continuation": " menemukan kapal penumpang pada barat daya yang digelar di sekitar wilayah pesisir.\n\nSampai saat ini kebanyakan kapal penumpang pada tahun 1980 dan 1980, Rina membawa payung karena langit mend"
+        },
+        {
+          "id": "explanation",
+          "category": "continuation",
+          "prompt": "Tanaman membutuhkan air dan cahaya matahari untuk",
+          "seed": 1337,
+          "continuation": " menghilangkan keseimbangan. Salah satu cahaya matahari terbenam adalah menghilangkan keseimbangan antara dua cahaya matahari dan cahaya matahari terbenam adalah menghilangkan keseimbangan. Sa"
+        },
+        {
+          "id": "explanation",
+          "category": "continuation",
+          "prompt": "Tanaman membutuhkan air dan cahaya matahari untuk",
+          "seed": 2026,
+          "continuation": " menenangkan tanaman atau mengalir dalam wadah tersebut.\n\n3. Menggunakan Tanaman Membutuhkan Air\nKonsumsi tanaman membutuhkan air dan cahaya matahari untuk menenangkan tanaman membutuhkan air."
+        },
+        {
+          "id": "recipe",
+          "category": "continuation",
+          "prompt": "Untuk membuat nasi goreng sederhana, siapkan nasi, telur, dan bawang. Pertama,",
+          "seed": 1337,
+          "continuation": " masukkan bumbu halus hingga layu, aduk rata.\n3. Tumis bumbu halus hingga harum, masukkan serai, dan terakhir masukkan bumbu halus.\n4. Tambahkan sedikit air. Masak hingga air menyusut dan meng"
+        },
+        {
+          "id": "recipe",
+          "category": "continuation",
+          "prompt": "Untuk membuat nasi goreng sederhana, siapkan nasi, telur, dan bawang. Pertama,",
+          "seed": 2026,
+          "continuation": " masukkan bawang putih dan cabai rawit.\n3. Sajikan selagi hangat, masak sampai empuk dan mengental sebentar\nResep: Telur Dadar Kuning\n\nBahan:\n- 250 gr daging sapi\n- 4 siung bawang merah\n- 5 si"
+        },
+        {
+          "id": "capital",
+          "category": "qa",
+          "prompt": "Pertanyaan: Apa ibu kota Jepang?\nJawaban:",
+          "seed": 1337,
+          "continuation": " Apa ibu kota Jepang?\nJawaban: Apa ibu kota Jepang?\nJawaban: Apa ibu kota Jepang?\nJawaban: Apa ibu kota Jepang?\nJawaban: Apa ibu kota Jepang?\nJawaban: Apa ibu kota Jepang?\nJawaban: Apa ibu kot"
+        },
+        {
+          "id": "capital",
+          "category": "qa",
+          "prompt": "Pertanyaan: Apa ibu kota Jepang?\nJawaban:",
+          "seed": 2026,
+          "continuation": " Apa ibu kota Jepang?\nJawaban: Apa ibu kota Jepang?\nJawaban: Apa ibu kota Jepang\nJawaban: Apa ibu kota Jepang\nJawaban: Apa ibu kota Jepang\nJawaban: Apa ibu kota Jepang\nJawaban: Apa ibu kota Je"
+        },
+        {
+          "id": "arithmetic",
+          "category": "qa",
+          "prompt": "Pertanyaan: Berapa hasil 2 + 3?\nJawaban:",
+          "seed": 1337,
+          "continuation": " 4\n- 1 + 4\n- 2 = 3\n- 1 + 4\n- 2 = 4\n- 1 = 3\n- 1 = 4\n- 1 = 3\n- 1 = 3\n- 1 = 3\n- 1 = 4\n- 1 = 4\n- 2 = 3\n- 1 = 4\n- 1 = 4\n- 1 = 4\n- 1 = 4\n- 1 = 4\n- 1 = 4\n\nLangkah 4\n- 1 = 4\n\nLangkah 4\n\nLangkah 4\n\nLan"
+        },
+        {
+          "id": "arithmetic",
+          "category": "qa",
+          "prompt": "Pertanyaan: Berapa hasil 2 + 3?\nJawaban:",
+          "seed": 2026,
+          "continuation": " 20\nDia membaca setiap kata yang sama seperti \"Setiap kata\"\nDia membaca setiap kata\nDia membaca setiap kata\nDia membaca setiap kata\nDia membaca setiap kata\nDia membaca setiap kata\nDia\nDia\nDia\n"
+        },
+        {
+          "id": "reading",
+          "category": "qa",
+          "prompt": "Budi memiliki dua kucing bernama Miko dan Milo.\nPertanyaan: Siapa nama kedua kucing Budi?\nJawaban:",
+          "seed": 1337,
+          "continuation": " Siapa nama kucing Budi\nPertanyaan: Siapa nama kucing Budi\nPertanyaan: Siapa nama kucing Budi\nPertanyaan: Siapa nama kucing Budi\nPertanyaan: Siapa nama kucing Budi\nPertanyaan: Siapa nama kucin"
+        },
+        {
+          "id": "reading",
+          "category": "qa",
+          "prompt": "Budi memiliki dua kucing bernama Miko dan Milo.\nPertanyaan: Siapa nama kedua kucing Budi?\nJawaban:",
+          "seed": 2026,
+          "continuation": "\n- Seorang pengantin anak yang bernama Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan Miko dan "
+        },
+        {
+          "id": "identity",
+          "category": "qa",
+          "prompt": "Pengguna: Siapa kamu?\nAsisten:",
+          "seed": 1337,
+          "continuation": " Saya Menemukan Kelelahan, Aku Sadari Saat Sakit Buat Aku\n\nTEMPO.CO Jakarta - Aku Sadari Saat Sakit Buat Aku Sadari Saat Sakit Buat Aku Sadari Saat Sakit Buat Aku Sadari Saat Sakit Buat Aku Sa"
+        },
+        {
+          "id": "identity",
+          "category": "qa",
+          "prompt": "Pengguna: Siapa kamu?\nAsisten:",
+          "seed": 2026,
+          "continuation": " Sari Sari Sari Sari Sari\n\nTEMPO.CO Jakarta - Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari Sari S"
+        },
+        {
+          "id": "list",
+          "category": "instruction",
+          "prompt": "Sebutkan tiga nama buah dalam bahasa Indonesia.\nJawaban:",
+          "seed": 1337,
+          "continuation": " Sejarah Nasional\nSejarah Nasional\nSejarah Nasional\nSejarah Nasional\nSejarah Nasional\nSejarah Nasional\nSejarah Nasional\nSejarah Nasional\nSejarah Nasional\nSejarah Nasional\nSejarah Nasional\nSeja"
+        },
+        {
+          "id": "list",
+          "category": "instruction",
+          "prompt": "Sebutkan tiga nama buah dalam bahasa Indonesia.\nJawaban:",
+          "seed": 2026,
+          "continuation": "\n- Sebutkan tiga nama buah\n- Sebutkan tiga nama buah\n- Sebutkan tiga nama buah\n- Sebutkan tiga nama buah\n- Sebutkan tiga nama buah\n- Sebutkan tiga nama buah\n- Sebutkan tiga nama buah\n- Sebutka"
+        },
+        {
+          "id": "copy",
+          "category": "instruction",
+          "prompt": "Tulis ulang persis kalimat berikut: Saya suka membaca buku.\nJawaban:",
+          "seed": 1337,
+          "continuation": " Saya suka membaca buku.\nJawaban: Saya suka membaca buku.\nJawaban: Saya suka membaca buku.\nJawaban: Saya suka membaca buku.\nJawaban: Saya suka membaca buku.\nJawaban: Saya suka membaca buku.\nJa"
+        },
+        {
+          "id": "copy",
+          "category": "instruction",
+          "prompt": "Tulis ulang persis kalimat berikut: Saya suka membaca buku.\nJawaban:",
+          "seed": 2026,
+          "continuation": " Saya suka membaca buku.\nJawaban: Saya suka membaca buku.\nJawaban: Saya suka membaca buku.\nJawaban: Saya suka membaca buku.\nJawaban: Saya suka membaca buku.\nJawaban: Saya suka membaca buku.\nJa"
+        },
+        {
+          "id": "summary",
+          "category": "instruction",
+          "prompt": "Ringkas dalam satu kalimat: Dina pergi ke pasar. Ia membeli sayur dan buah, lalu pulang untuk memasak.\nRingkasan:",
+          "seed": 1337,
+          "continuation": " Dina pergi ke pasar.\nRingkasan: Dina pergi ke pasar\nRingkasan: Dina pergi ke pasar\nRingkasan: Dina pergi ke pasar\nRingkasan: Dina pergi ke pasar\nRingkasan: Dina\nringkasan: Dina\nringkasan\nring"
+        },
+        {
+          "id": "summary",
+          "category": "instruction",
+          "prompt": "Ringkas dalam satu kalimat: Dina pergi ke pasar. Ia membeli sayur dan buah, lalu pulang untuk memasak.\nRingkasan:",
+          "seed": 2026,
+          "continuation": " Dina pergi ke pasar.\nRingkasan: Dina pergi ke pasar\nRingkasan: dina pergi ke pasar\nRingkasan: dina pergi ke pasar\nRingkasan: dina\nRingkasan: dina\nRingkasan: dina\nRingkasan: dina\nRingkasan: di"
+        },
+        {
+          "id": "translation",
+          "category": "instruction",
+          "prompt": "Terjemahkan ke bahasa Indonesia: Good morning.\nTerjemahan:",
+          "seed": 1337,
+          "continuation": " Bahasa Indonesia\nBahasa Indonesia\nBahasa Indonesia\nBahasa Indonesia\nBahasa Indonesia\nBahasa Indonesia\nBahasa Indonesia\nBahasa Indonesia\nBahasa Indonesia\nBahasa Indonesia\nBahasa Indonesia\nBaha"
+        },
+        {
+          "id": "translation",
+          "category": "instruction",
+          "prompt": "Terjemahkan ke bahasa Indonesia: Good morning.\nTerjemahan:",
+          "seed": 2026,
+          "continuation": " Bahasa Indonesia\nTerjemahan ke bahasa Indonesia\nTerjemahan ke bahasa Indonesia\nTerjemahan ke bahasa Indonesia\nTerjemahan ke bahasa Indonesia\nTerjemahan ke bahasa Indonesia\nTerjemahan ke bahas"
+        }
+      ]
+    }
+  ]
+}

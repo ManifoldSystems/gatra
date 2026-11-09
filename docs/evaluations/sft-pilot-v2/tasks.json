@@ -1,0 +1,1659 @@
+{
+  "settings": {
+    "decoding": "FP32 greedy top_k=1",
+    "max_new_bytes": 128,
+    "stop_byte": 10,
+    "validation_sha256": "572df470504400e6cacb99c16a9b5a78613da0fccb1e14f66bf498e180b9d1d3",
+    "per_task": 25
+  },
+  "results": [
+    {
+      "checkpoint": "checkpoints/gatra-10m-expanded-ctx512-fp16/latest.pt",
+      "sha256": "1b49de24a79a4e609ad84a7ff4bc7037383308065ebbbf82a7499a5c72730576",
+      "counts": {
+        "copy": 25,
+        "addition": 25,
+        "extraction": 25,
+        "tydiqa-id": 25
+      },
+      "correct": {
+        "copy": 0,
+        "addition": 0,
+        "extraction": 0,
+        "tydiqa-id": 0
+      },
+      "stopped": {
+        "copy": 6,
+        "addition": 6,
+        "extraction": 15,
+        "tydiqa-id": 4
+      },
+      "samples": [
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Adi membeli botol.\n\nAssistant: ",
+          "expected": "Adi membeli botol.",
+          "answer": "1. Menggunakan perangkat lunak pembelian botol untuk menghitung botol dan menggunakan perangkat lunak pembelian botol untuk meng",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 23 + 23?\n\nAssistant: ",
+          "expected": "46",
+          "answer": "Hasil 23 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nRudi memiliki topi berwarna hitam. Topi itu disimpan di lantai.\n\nPertanyaan: Apa warna topi milik Rudi?\n\nAssistant: ",
+          "expected": "hitam",
+          "answer": "Topi itu disimpan di lantai dan disimpan di lantai dan disimpan di lantai dan disimpan di lantai dan disimpan di lantai dan disi",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nSari memiliki payung berwarna hijau. Payung itu disimpan di lantai.\n\nPertanyaan: Apa warna payung milik Sari?\n\nAssistant: ",
+          "expected": "hijau",
+          "answer": "Payung milik Sari adalah payung milik Sari yang mengandung berbagai macam bahan yang digunakan untuk menghilangkan berbagai maca",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 2 + 36. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "38",
+          "answer": "1. Persiapan untuk menghitung jumlah uang yang diberikan dalam persiapan untuk menghitung jumlah uang yang diberikan.",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nLina memiliki buku berwarna hitam. Buku itu disimpan di lemari.\n\nPertanyaan: Apa warna buku milik Lina?\n\nAssistant: ",
+          "expected": "hitam",
+          "answer": "Buku itu disimpan di lemari.",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 7 + 23?\n\nAssistant: ",
+          "expected": "30",
+          "answer": "Hasil 8 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Tono menyimpan sepatu.\n\nAssistant: ",
+          "expected": "Tono menyimpan sepatu.",
+          "answer": "Saya tidak menyimpan sepatu dan menyimpan sepatu dalam sepatu dan menyimpan sepatu dalam sepatu dan menyimpan sepatu dalam sepat",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nArung Palakka La Tenri tatta lahir di Lamatta, Mario-ri Wawo, Soppeng, pada tanggal 15 September 1634 sebagai anak dari pasangan La Pottobune', Arung Tana Tengnga, dan istrinya, We Tenri Suwi, Datu Mario-ri Wawo, anak dari La Tenri Ruwa Paduka Sri Sultan Adam, Arumpone Bone.[2]\n\nPertanyaan: Kapan Arung Palakka lahir?\n\nAssistant: ",
+          "expected": "15 September 1634",
+          "answer": "Arung Palakka lahir adalah sebuah kapal arung palakka yang dikenal sebagai Palakka La Tenri Suwi dan Palakka La Tenri Suwi dan P",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Sari meminjam payung.\n\nAssistant: ",
+          "expected": "Sari meminjam payung.",
+          "answer": "Sari meminjam payung adalah sari meminjam payung dari sari meminjam payung. Sari meminjam payung adalah sari meminjam payung dar",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Salin kalimat ini tanpa perubahan: Sari menemukan sepatu.\n\nAssistant: ",
+          "expected": "Sari menemukan sepatu.",
+          "answer": "Sari menemukan sepatu yang menemukan sepatu yang menemukan sepatu yang menemukan sepatu yang menemukan sepatu yang menemukan sep",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 23 + 38?\n\nAssistant: ",
+          "expected": "61",
+          "answer": "Hasil 23 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 27 + 39?\n\nAssistant: ",
+          "expected": "66",
+          "answer": "Hasil 28 + 39 + 39 + 39 + 39 + 39 + 39 + 39 + 39 + 39 + 39 + 39 + 39 + 39 + 39 + 39 + 39 + 39 + 39 + 39 + 39 + 39 + 39 + 39 + 39",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nWati memiliki sepatu berwarna biru. Sepatu itu disimpan di meja.\n\nPertanyaan: Di mana sepatu itu disimpan?\n\nAssistant: ",
+          "expected": "meja",
+          "answer": "Di mana sepatu itu disimpan di meja adalah di mana sepatu itu disimpan di meja.",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Salin kalimat ini tanpa perubahan: Adi menemukan jaket.\n\nAssistant: ",
+          "expected": "Adi menemukan jaket.",
+          "answer": "Salin kalimat ini tanpa perubahan adalah \"Adi menemukan jaket\" dan \"Adi menemukan jaket\" dalam \"Adi menemukan jaket\" dan \"Adi me",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nDirigen atau konduktor adalah orang yang memimpin sebuah pertunjukan musik melalui gerak isyarat. Orkestra dan paduan suara biasanya dipimpin oleh seorang dirigen.\n\nPertanyaan: Apa tugas utama seorang konduktor musik?\n\nAssistant: ",
+          "expected": "memimpin sebuah pertunjukan musik melalui gerak isyarat",
+          "answer": "Seorang konduktor musik adalah seorang konduktor musik yang memimpin seorang konduktor musik yang memimpin seorang konduktor mus",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 8 + 34?\n\nAssistant: ",
+          "expected": "42",
+          "answer": "Hasil 9 + 35 + 35 + 35 + 35 + 35 + 35 + 35 + 35 + 35 + 35 + 35 + 35 + 35 + 35 + 35 + 35 + 35 + 35 + 35 + 35 + 35 + 35 + 35 + 35",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nMaya memiliki pensil berwarna kuning. Pensil itu disimpan di meja.\n\nPertanyaan: Siapa pemilik pensil itu?\n\nAssistant: ",
+          "expected": "Maya",
+          "answer": "Siapa pemilik pensil itu?",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 22 + 23?\n\nAssistant: ",
+          "expected": "45",
+          "answer": "Hasil 22 + 23 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nNina memiliki kertas berwarna putih. Kertas itu disimpan di lemari.\n\nPertanyaan: Di mana kertas itu disimpan?\n\nAssistant: ",
+          "expected": "lemari",
+          "answer": "Kertas itu disimpan di lemari.",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nWati memiliki tas berwarna hijau. Tas itu disimpan di rak.\n\nPertanyaan: Siapa pemilik tas itu?\n\nAssistant: ",
+          "expected": "Wati",
+          "answer": "Siapa pemilik tas itu?",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Tono membeli kertas.\n\nAssistant: ",
+          "expected": "Tono membeli kertas.",
+          "answer": "Tono membeli kertas dan membeli kertas dengan menggunakan kertas dan membeli kertas dengan menggunakan kertas dan membeli kertas",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nRudi memiliki tas berwarna putih. Tas itu disimpan di meja.\n\nPertanyaan: Di mana tas itu disimpan?\n\nAssistant: ",
+          "expected": "meja",
+          "answer": "Di mana tas itu disimpan di meja adalah di mana tas itu disimpan di meja.",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nPada 29 Agustus 2016 ia dilaporkan berada di perawatan intensif, setelah menderita stroke.[3][4][5] Kematiannya secara resmi dikonfirmasi pada 2 September 2016.[6]\n\nPertanyaan: Apa penyebab kematian Islam Abduganiyevich Karimov?\n\nAssistant: ",
+          "expected": "menderita stroke",
+          "answer": "Pertanyaan: Apa penyebab kematian Islam Abduganiyevich Karimov?",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nWati memiliki sepatu berwarna biru. Sepatu itu disimpan di lemari.\n\nPertanyaan: Siapa pemilik sepatu itu?\n\nAssistant: ",
+          "expected": "Wati",
+          "answer": "Siapa pemilik sepatu itu?",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 17 + 17. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "34",
+          "answer": "1. Persiapan untuk menghitung 17 dan 20 dan 20 dan 20 dan 20 dan 20 dan 20 dan 20 dan 20 dan 20 dan 20 dan 20 dan 20 dan 20 dan",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nRumah Baanjung (Ba'anjung) adalah nama kolektif untuk rumah tradisional suku Banjar dan suku Dayak Bakumpai.[1] Suku Banjar biasanya menamakan rumah tradisonalnya dengan sebutan Rumah Banjar atau Rumah Bahari.\n\nPertanyaan: Apakah nama rumah adat suku Banjar?\n\nAssistant: ",
+          "expected": "Rumah Baanjung",
+          "answer": "Rumah banjar adalah nama rumah banjar yang ditujukan untuk mengangkut banjar dan mengangkut banjar dari banjar dan mengangkut ba",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nOrde Lama dalam sejarah politik Indonesia merujuk kepada masa pemerintahan Soekarno yang berlangsung dari tahun 1945 hingga 1965. Istilah ini tentu saja tidak digunakan pada saat itu, dan baru dicetuskan pada masa pemerintahan Soeharto yang disebut juga dengan Orde Baru.\n\nPertanyaan: Tahun berapa orde lama berakhir?\n\nAssistant: ",
+          "expected": "1965",
+          "answer": "Orde Lama berakhir dengan Orde Lama berakhir dengan Orde Lama berakhir.",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nDoni memiliki sepatu berwarna hitam. Sepatu itu disimpan di lantai.\n\nPertanyaan: Di mana sepatu itu disimpan?\n\nAssistant: ",
+          "expected": "lantai",
+          "answer": "Di mana sepatu itu disimpan di lantai dan di mana sepatu itu disimpan di lantai.",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 20 + 27. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "47",
+          "answer": "1. Persiapan untuk menghitung jumlah uang yang diberikan dalam persiapan untuk menghitung jumlah uang yang diberikan.",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nSari memiliki botol berwarna merah. Botol itu disimpan di kotak.\n\nPertanyaan: Apa warna botol milik Sari?\n\nAssistant: ",
+          "expected": "merah",
+          "answer": "Sari memiliki botol berwarna merah dan botol berwarna merah dan botol berwarna merah dan botol berwarna merah dan botol berwarna",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nRudi memiliki tas berwarna hijau. Tas itu disimpan di rak.\n\nPertanyaan: Siapa pemilik tas itu?\n\nAssistant: ",
+          "expected": "Rudi",
+          "answer": "Siapa pemilik tas itu?",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nLina memiliki botol berwarna hitam. Botol itu disimpan di kursi.\n\nPertanyaan: Apa warna botol milik Lina?\n\nAssistant: ",
+          "expected": "hitam",
+          "answer": "Botol itu disimpan di kursi dan disimpan di kursi dan disimpan di kursi dan disimpan di kursi dan disimpan di kursi dan disimpan",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 9 + 17. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "26",
+          "answer": "1. Persiapan untuk menghitung jumlah data yang diberikan adalah 10.",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nAwalnya merupakan sekolah homogen, khusus untuk laki-laki. Sejak 1990 mulai menerima siswa perempuan. Ikatan alumni Kolese Gonzaga, dikenal dengan nama Ikagona (Ikatan Alumni Kolese Gonzaga). Rektor pertama sekaligus kepala sekolah Kolese Gonzaga adalah Pater Joseph Ignatius Gerardus Maria Drost (1925-2005).\n\nPertanyaan: Siapa kepala sekolah Kolese Gonzaga pertama?\n\nAssistant: ",
+          "expected": "Pater Joseph Ignatius Gerardus Maria Drost",
+          "answer": "Kolese Gonzaga adalah sebuah kolese gonzaga yang digunakan untuk mengembangkan kepercayaan diri dan mengajarkan kepada sekolah k",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nDedi memiliki penggaris berwarna kuning. Penggaris itu disimpan di rak.\n\nPertanyaan: Di mana penggaris itu disimpan?\n\nAssistant: ",
+          "expected": "rak",
+          "answer": "Di mana penggaris itu disimpan di rak adalah di mana penggaris itu disimpan di rak adalah di mana penggaris itu disimpan di rak",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Doni menemukan jaket.\n\nAssistant: ",
+          "expected": "Doni menemukan jaket.",
+          "answer": "1. Menggunakan Persis: Doni menemukan jaket yang tersisa dari persis sebelum menemukan jaket.",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nWati memiliki kertas berwarna ungu. Kertas itu disimpan di rak.\n\nPertanyaan: Apa warna kertas milik Wati?\n\nAssistant: ",
+          "expected": "ungu",
+          "answer": "Kertas itu disimpan di rak atau disimpan di rak atau disimpan di rak atau disimpan di rak atau disimpan di rak atau disimpan di",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nNina memiliki sepatu berwarna merah. Sepatu itu disimpan di lantai.\n\nPertanyaan: Siapa pemilik sepatu itu?\n\nAssistant: ",
+          "expected": "Nina",
+          "answer": "Siapa pemilik sepatu itu?",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 34 + 35. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "69",
+          "answer": "1. Persiapan untuk menghitung angka dari setiap persiapan untuk menghitung angka dari setiap persiapan untuk menghitung angka da",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nNina memiliki kertas berwarna hitam. Kertas itu disimpan di lemari.\n\nPertanyaan: Apa warna kertas milik Nina?\n\nAssistant: ",
+          "expected": "hitam",
+          "answer": "Kertas itu disimpan di lemari.",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nMaya memiliki tas berwarna putih. Tas itu disimpan di lemari.\n\nPertanyaan: Di mana tas itu disimpan?\n\nAssistant: ",
+          "expected": "lemari",
+          "answer": "Di mana tas itu disimpan di lemari adalah di mana tas itu disimpan di lemari.",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 3 + 6. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "9",
+          "answer": "1. Persiapan untuk menghitung angka dari setiap persiapan untuk menghitung angka dari setiap persiapan untuk menghitung angka da",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nDoni memiliki sepatu berwarna hitam. Sepatu itu disimpan di lantai.\n\nPertanyaan: Apa warna sepatu milik Doni?\n\nAssistant: ",
+          "expected": "hitam",
+          "answer": "Doni memiliki sepatu berwarna hitam dan berwarna hitam dan berwarna hitam dan berwarna hitam dan berwarna hitam dan berwarna hit",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 32 + 37. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "69",
+          "answer": "1. Persiapan untuk menghitung angka dari setiap persiapan untuk menghitung angka dari setiap persiapan untuk menghitung angka da",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 30 + 33. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "63",
+          "answer": "1. Persiapan untuk menghitung angka dari setiap persiapan untuk menghitung angka dari setiap persiapan untuk menghitung angka da",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nDoni memiliki buku berwarna ungu. Buku itu disimpan di kursi.\n\nPertanyaan: Apa warna buku milik Doni?\n\nAssistant: ",
+          "expected": "ungu",
+          "answer": "Doni memiliki buku milik Doni dan menggunakan buku milik Doni untuk menggunakan buku milik Doni dan menggunakan buku milik Doni",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nFestival Film Indonesia (sering disingkat FFI) merupakan ajang penghargaan tertinggi bagi dunia perfilman di Indonesia. FFI pertama kali diselenggarakan pada tahun 1955 dan berlanjut pada tahun 1960 dan 1967 (dengan nama Pekan Apresiasi Film Nasional), sebelum akhirnya mulai diselenggarakan secara teratur pada tahun 1973.\n\nPertanyaan: Kapan Festival Film Indonesia pertama diadakan?\n\nAssistant: ",
+          "expected": "1955",
+          "answer": "Film Indonesia pertama diadakan pada tahun 1973 dan 1973. Film ini diselenggarakan pada tahun 1973 dan 1973. Film ini diselengga",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nGalilea (bahasa Ibrani: hagalil הגליל, bahasa Arab: al-jaleel الجليل, berarti \"sirkuit\" atau berarti \"bukit\"; English: Galilee; Greek: Γαλιλαία ,Galilaia, Latin: Galilaea) adalah sebuah daerah yang luas di bagian utara tanah Israel dan bertumpang tindih dengan sebagian Distrik Utara Israel.\n\nPertanyaan: Dimanakah letak Galilea?\n\nAssistant: ",
+          "expected": "bagian utara tanah Israel dan bertumpang tindih dengan sebagian Distrik Utara Israe",
+          "answer": "Dimanakah letak Galilea adalah dimana Galilea adalah dimana Galilea adalah dimana Galilea adalah dimana Galilea adalah dimana Ga",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nNina memiliki kertas berwarna hijau. Kertas itu disimpan di kursi.\n\nPertanyaan: Apa warna kertas milik Nina?\n\nAssistant: ",
+          "expected": "hijau",
+          "answer": "Kertas itu disimpan di kursi dan disimpan di kursi dan disimpan di kursi dan disimpan di kursi dan disimpan di kursi dan disimpa",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nAdi memiliki buku berwarna kuning. Buku itu disimpan di lemari.\n\nPertanyaan: Apa warna buku milik Adi?\n\nAssistant: ",
+          "expected": "kuning",
+          "answer": "Buku itu disimpan di lemari.",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nAdi memiliki payung berwarna merah. Payung itu disimpan di kursi.\n\nPertanyaan: Di mana payung itu disimpan?\n\nAssistant: ",
+          "expected": "kursi",
+          "answer": "Payung itu disimpan di kursi adalah di mana payung itu disimpan di kursi.",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 13 + 31?\n\nAssistant: ",
+          "expected": "44",
+          "answer": "Hasil 13 + 31 + 31 + 31 + 31 + 31 + 31 + 31 + 31 + 31 + 31 + 31 + 31 + 31 + 31 + 31 + 31 + 31 + 31 + 31 + 31 + 31 + 31 + 31 + 31",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nWati memiliki buku berwarna hijau. Buku itu disimpan di kursi.\n\nPertanyaan: Di mana buku itu disimpan?\n\nAssistant: ",
+          "expected": "kursi",
+          "answer": "Di mana buku itu disimpan di kursi adalah di mana buku itu disimpan di kursi.",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nBon Jovi adalah kelompok musik rock dari Sayreville, New Jersey, Amerika Serikat. Mereka telah menjual lebih dari 40 juta album di Amerika Serikat dan lebih dari 120 juta keping album di seluruh dunia sejak berdirinya pada tahun 1983.Bon Jovi saat ini terdiri dari Vokalis Jon Bon Jovi, Keyboardist David Bryan, Drummer Tico Torres, Gitaris Phil X, dan Bassist Hugh McDonald.\n\nPertanyaan: Kapan Bon Jovi berdiri ?\n\nAssistant: ",
+          "expected": "1983",
+          "answer": "Kapan Bon Jovi berdiri ?",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nMargarita dari Navarra (French: Marguerite, Spanish: Margarita, Italian: Margherita) (skt. 1135 – 12 Agustus 1183) merupakan seorang permaisuri Kerajaan Sisilia selama pemerintahan Gugghiermu I (1154–1166) dan pemangku takhta selama minoritas anaknya, Gugghiermu II.\n\nPertanyaan: Siapakah anak dari Margarita dari Navarra?\n\nAssistant: ",
+          "expected": "Gugghiermu II",
+          "answer": "Margarita dari Navarra adalah seorang pertanyaan yang mengatakan bahwa Navarra adalah seorang pertanyaan yang mengatakan bahwa N",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 10 + 22?\n\nAssistant: ",
+          "expected": "32",
+          "answer": "Hasil 10 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Maya meminjam tas.\n\nAssistant: ",
+          "expected": "Maya meminjam tas.",
+          "answer": "Maya meminjam tas menggunakan persis sebagai persis sebelum menggunakan persis sebelum menggunakan persis sebelum menggunakan pe",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nWati memiliki payung berwarna biru. Payung itu disimpan di lemari.\n\nPertanyaan: Apa warna payung milik Wati?\n\nAssistant: ",
+          "expected": "biru",
+          "answer": "Payung milik Wati adalah pertanyaan yang menggambarkan kemampuan menggambarkan kemampuan menggambarkan kemampuan menggambarkan k",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 10 + 18?\n\nAssistant: ",
+          "expected": "28",
+          "answer": "Hasil 10 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nSetahun setelah Hari Kemerdekaan Malaysia, yaitu pada tanggal 24 Juli 1958, Raja Malaysia, DYMM(Duli Yang Maha Mulia) Almarhum Tuanku Abdul Rahman memberikan gelar 'Diraja' kepada Pasukan Polisi Persekutuan Tanah Melayu. Kemudian pasukan kepolisian Malaysia dikenal dengan nama \"Polis Diraja Persekutuan Tanah Melayu\" atau \"The Royal Federation of Malayan Police\" dan pada tahun 1963 ditukar menjadi \"Polis Diraja Malaysia\".\n\nPertanyaan: Kapan PDRM dibentuk ?\n\nAssistant: ",
+          "expected": "1963",
+          "answer": "Kapan PDRM dibentuk dalam pertemuan tersebut dengan PDRM dibentuk dalam pertemuan tersebut. Pada tahun 1963, PDRM dibentuk dalam",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 5 + 33. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "38",
+          "answer": "1. Persiapan untuk menghitung jumlah uang yang diberikan dalam persiapan untuk menghitung jumlah uang yang diberikan.",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 7 + 37?\n\nAssistant: ",
+          "expected": "44",
+          "answer": "Hasil 8 + 37 + 37 + 37 + 37 + 37 + 37 + 37 + 37 + 37 + 37 + 37 + 37 + 37 + 37 + 37 + 37 + 37 + 37 + 37 + 37 + 37 + 37 + 37 + 37",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Sari menemukan penggaris.\n\nAssistant: ",
+          "expected": "Sari menemukan penggaris.",
+          "answer": "Sari menemukan penggaris dalam persis berikut:",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nMasjid ini merupakan contoh sempurna dari arsitektur Islami Iran, dan dipandang sebagai mahakarya Arsitektur Persia. Masjid Shah merupakan mahakarya abadi dari arsitektur di Iran. Masjid ini terdaftar, bersama dengan Taman Naghsh-i Jahan, sebagai Situs Warisan Dunia UNESCO. Pembangunannya dimulai pada tahun 1611, keindahan masjid ini terutama dikarenakan oleh ubin mozaik dengan tujuh warna dan tulisan-tulisan kaligrafinya.\n\nPertanyaan: Kapan Masjid Shah  dibangun ?\n\nAssistant: ",
+          "expected": "1611",
+          "answer": "Masjid Shah merupakan salah satu dari tiga pertanyaan yang ditulis dalam bahasa Inggris yang ditulis dalam bahasa Inggris adalah",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nKabupaten Takalar adalah sebuah kabupaten di provinsi Sulawesi Selatan, Indonesia. Ibu kotanya terletak di Pattallassang. Kab. Takalar terdiri dari sembilan kecamatan, yaitu Pattallassang, Polombangkeng Selatan, Polombangkeng Utara, Galesong, Galesong Selatan, Galesong Utara, Sanrobone, Mappakasunggu dan Manggarabombang. Kabupaten ini memiliki luas wilayah 566,51km² dan berpenduduk sebanyak ± 250.000 jiwa.\n\nPertanyaan: berapakah luas Kabupaten Takalar?\n\nAssistant: ",
+          "expected": "566,51km²",
+          "answer": "Luas wilayah Kabupaten Takalar adalah luas wilayah Kabupaten Takalar dan Kabupaten Takalar berada di wilayah Kabupaten Takalar.",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nFrekuensi adalah ukuran jumlah putaran ulang per peristiwa dalam satuan detik dengan satuan Hz.\n\nPertanyaan: Apa yang dimaksud dengan frekuensi ?\n\nAssistant: ",
+          "expected": "ukuran jumlah putaran ulang per peristiwa dalam satuan detik dengan satuan Hz",
+          "answer": "Apa yang dimaksud dengan frekuensi ?",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nAdapun yang merumuskan proklamasi Kemerdekaan Bangsa Indonesia terdiri dari Tadashi Maeda, Tomegoro Yoshizumi, S. Nishijima, S. Miyoshi, Mohammad Hatta, Soekarno, dan Achmad Soebardjo[4].\n\nPertanyaan: Siapa yang merumuskan naskah proklamasi Indonesia?\n\nAssistant: ",
+          "expected": "Tadashi Maeda, Tomegoro Yoshizumi, S. Nishijima, S. Miyoshi, Mohammad Hatta, Soekarno, dan Achmad Soebardjo",
+          "answer": "Naskah proklamasi Indonesia adalah sebuah naskah proklamasi Indonesia yang merumuskan naskah proklamasi Indonesia yang merumuska",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nSetelah resmi menjadi prajurit TNI Angkatan Udara pada tahun 1954, Djalaludin dgn pangkat Opsir Udara Tingkat 2 (setara Letnan Dua Udara saat ini) ditempatkan di Skadron 2/Angkut yg mengoperasikan pesawat angkut Dakota DC-3 berpangkalan di Lanud Halim Perdanakusuma.\n\nPertanyaan: Kapan Mayor PNB Djalaludin Tantu bergabung dengan TNI ?\n\nAssistant: ",
+          "expected": "1954",
+          "answer": "TNI adalah salah satu pertanyaan yang paling penting dalam pertanyaan tersebut. TNI adalah salah satu pertanyaan yang paling pen",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nSunan Ampel diperkirakan wafat pada tahun 1481 di Demak dan dimakamkan di sebelah barat Masjid Ampel, Surabaya.\n\nPertanyaan: Kapan Sunan Ampel meninggal?\n\nAssistant: ",
+          "expected": "1481",
+          "answer": "Sunan Ampel meninggal di desa Pangandaran, Kecamatan Sunan Ampel, Kabupaten Bandung, Kabupaten Bandung, Kabupaten Bandung, Kabup",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Salin kalimat ini tanpa perubahan: Nina menemukan pensil.\n\nAssistant: ",
+          "expected": "Nina menemukan pensil.",
+          "answer": "Salin kalimat ini tanpa perubahan adalah \"Perubahan yang Terjadi\".",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nStardust adalah sebuah buku fantasi bagi dewasa karangan Neil Gaiman, dengan ilustrasi karya Charles Vess. Buku ini diterbitkan di Inggris pada tahun 1998, dan di Indonesia pada tahun 2007 oleh PT Gramedia Pustaka Utama.\n\nPertanyaan: Kapan buku Stardust diterbitkan di Inggris?\n\nAssistant: ",
+          "expected": "1998",
+          "answer": "Stardust diterbitkan di Inggris pada tahun 1998, dan di Inggris pada tahun 1998, dan di Inggris pada tahun 1998, dan di Inggris",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 21 + 22?\n\nAssistant: ",
+          "expected": "43",
+          "answer": "Hasil 21 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22 + 22",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 2 + 21. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "23",
+          "answer": "1. Persiapan untuk menghitung jumlah uang yang diberikan dalam persiapan untuk menghitung jumlah uang yang diberikan.",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 8 + 38?\n\nAssistant: ",
+          "expected": "46",
+          "answer": "Hasil 9 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38 + 38",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 8 + 13. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "21",
+          "answer": "1. Persiapan untuk menghitung jumlah data yang diberikan adalah 10.",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nPerang Shiffin (Arab: وقعة صفين ) (Mei-Juli 657 Masehi) terjadi semasa zaman fitnah besar atau perang saudara pertama orang Islam dengan pertempuran utama terjadi dari tanggal 26-28 Juli. Pertempuran ini terjadi di antara dua kubu yaitu, Muawiyah bin Abu Sufyan dan Ali bin Abi Talib di tebing Sungai Furat yang kini terletak di Syria (Syam) pada 1 Shafar tahun 37 Hijriah.\n\nPertanyaan: Tahun berapa Pertempuran Shiffin terjadi?\n\nAssistant: ",
+          "expected": "657 Masehi",
+          "answer": "Pertempuran Shiffin terjadi di Syria (Syria dan Syria dan Syria dan Syria dan Syria dan Syria dan Syria dan Syria dan Syria dan",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nMonsters University adalah sebuah film komedi animasi komputer 3D Amerika Serikat yang diproduksi oleh Pixar Animation Studios dan dirilis oleh Walt Disney Pictures.[4] Disutradarai oleh Dan Scanlon dan diproduseri oleh Kori Rae, film ini merupakan film keempatbelas yang diproduksi oleh Pixar, dan prekuel dari film sebelumnya, Monsters, Inc. (2001).\n\nPertanyaan: Kapan film animasi Monster,Inc dirilis?\n\nAssistant: ",
+          "expected": "2001",
+          "answer": "Film animasi Monster merupakan film yang diproduksi oleh Pixar Animasi Monster dan dirilis oleh Pixar Animasi Monster. Film ini",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Tono meminjam payung.\n\nAssistant: ",
+          "expected": "Tono meminjam payung.",
+          "answer": "Tono meminjam payung adalah tono meminjam payung dari tono meminjam payung. Tono meminjam payung dari tono meminjam payung dari",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 9 + 20. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "29",
+          "answer": "1. Persiapan untuk menghitung jumlah persentase dari persentase dan persentase dari persentase dari persentase dari persentase d",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nMuseum Louvre (bahasa Perancis:Musée du Louvre; bahasa Inggris: the Louvre Museum) adalah salah satu museum terbesar, museum seni yang paling banyak dikunjungi dan sebuah monumen bersejarah di dunia. Museum Louvre terletak di Rive Droite Seine, Arondisemen pertama di Paris, Perancis. Hampir 35.000 benda dari zaman prasejarah hingga abad ke-19 dipamerkan di area seluas 60.600 meter persegi.\n\nPertanyaan: Berapa luas Museum Louvre?\n\nAssistant: ",
+          "expected": "60.600 meter persegi",
+          "answer": "Louvre adalah salah satu museum yang paling populer di dunia dan menganggap bahwa museum ini memiliki kemampuan untuk menganggap",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nFrekuensi adalah ukuran jumlah putaran ulang per peristiwa dalam satuan detik dengan satuan Hz.\n\nPertanyaan: Apa itu frekuensi ?\n\nAssistant: ",
+          "expected": "ukuran jumlah putaran ulang per peristiwa dalam satuan detik dengan satuan Hz",
+          "answer": "Frekuensi adalah frekuensi adalah frekuensi adalah frekuensi adalah frekuensi adalah frekuensi adalah frekuensi adalah frekuensi",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 1 + 5?\n\nAssistant: ",
+          "expected": "6",
+          "answer": "Hasil 1 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nKarapas adalah cangkang keras yang melindungi organ dalam pada tubuh crustacea. Karapas merupakan penutup sefalothoraks yang tersusun dari zat tanduk atau kitin yang tebal. Fungsi karapas adalah untuk melindungi organ-organ bagian dalam seperti insang, alat pencernaan termasuk organ hepatopankreas, jantung dan organ reproduksi.\n\nPertanyaan: Apa itu karapas ?\n\nAssistant: ",
+          "expected": "cangkang keras yang melindungi organ dalam pada tubuh crustacea",
+          "answer": "Karapas adalah karapas yang mengandung karapas yang mengandung karapas yang mengandung karapas yang mengandung karapas yang meng",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Salin kalimat ini tanpa perubahan: Sari menemukan penggaris.\n\nAssistant: ",
+          "expected": "Sari menemukan penggaris.",
+          "answer": "Sari menemukan penggaris dalam perubahan yang diberikan oleh penggaris dalam perubahan yang diberikan. Penggaris dalam perubahan",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Adi menyimpan payung.\n\nAssistant: ",
+          "expected": "Adi menyimpan payung.",
+          "answer": "1. Menggunakan Persis: Menggunakan Persis untuk Menggunakan Persis",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nFilm Fences mendapatkan $57,682,904 di Amerika Utara dan $6,731,857 di negara lain. Total pendapatan yang dihasilkan oleh film ini mencapai $64,414,761, melebihi anggaran produksi film $24 juta.[2]\n\nPertanyaan: Berapa biaya produksi film Fences ?\n\nAssistant: ",
+          "expected": "$24 juta",
+          "answer": "Berapa biaya produksi film Fences adalah $1,525,900,900,900,900,900,900,900,900,900,900,900,900,900,900,900,900,900,900,900,900,",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Salin kalimat ini tanpa perubahan: Sari menemukan topi.\n\nAssistant: ",
+          "expected": "Sari menemukan topi.",
+          "answer": "Sari menemukan topi dan menggunakan topi dan menggunakan topi dan menggunakan topi dan menggunakan topi dan menggunakan topi dan",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nReal Brasil atau R$, adalah mata uang resmi negara Brasil sejak tahun 1994 menggantikan mata uang Cruzeiro Real Brasil. Mata uang ini setiap satu-satunya dibagi menjadi 100 centavos. Mata uang ini terbagi menjadi 1,2,5,10,20,50,100 reals, dicetak dan diatur penggunaannya oleh Banco Central do Brasil, dengan kode ISO 4217 BRL.\n\nPertanyaan: mata uang apakah yang digunakan di brazil?\n\nAssistant: ",
+          "expected": "Real Brasil",
+          "answer": "Mata uang apakah yang digunakan di brasil adalah mata uang apakah yang digunakan di brasil adalah mata uang apakah yang digunaka",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Maya meminjam botol.\n\nAssistant: ",
+          "expected": "Maya meminjam botol.",
+          "answer": "Maya meminjam botol dari botol dan meminjam botol dari botol dari botol dari botol dari botol dari botol dari botol dari botol d",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Maya menemukan pensil.\n\nAssistant: ",
+          "expected": "Maya menemukan pensil.",
+          "answer": "Maya menemukan pensil dalam persis seperti ini:",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Maya membeli penggaris.\n\nAssistant: ",
+          "expected": "Maya membeli penggaris.",
+          "answer": "Maya membeli penggaris dan membeli penggaris dari berbagai perangkat lunak dan membeli penggaris dari berbagai perangkat lunak d",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Adi menemukan jaket.\n\nAssistant: ",
+          "expected": "Adi menemukan jaket.",
+          "answer": "1. Menggunakan Persis: Menggunakan persis atau persis atau persis sebelum menemukan jaket.",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Nina menemukan kertas.\n\nAssistant: ",
+          "expected": "Nina menemukan kertas.",
+          "answer": "Kertas adalah kertas yang diberikan oleh persis dan kertas yang diberikan oleh persis dan kertas yang diberikan oleh persis dan",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Dedi membeli tas.\n\nAssistant: ",
+          "expected": "Dedi membeli tas.",
+          "answer": "Saya tidak memiliki kemampuan untuk menghasilkan uang dari perusahaan yang berbeda. Saya tidak memiliki kemampuan untuk menghasi",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Nina menemukan payung.\n\nAssistant: ",
+          "expected": "Nina menemukan payung.",
+          "answer": "1. Persiapan untuk menghadapi persiapan dan mengambil keputusan yang sama dengan persiapan dan persiapan dan persiapan dan persi",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Lina membeli botol.\n\nAssistant: ",
+          "expected": "Lina membeli botol.",
+          "answer": "1. Menggunakan perangkat lunak pembelian botol untuk menghitung botol dan menggunakan perangkat lunak pembelian botol untuk meng",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Salin kalimat ini tanpa perubahan: Wati membaca tas.\n\nAssistant: ",
+          "expected": "Wati membaca tas.",
+          "answer": "\"Tanpa perubahan yang dibutuhkan oleh perubahan yang dibutuhkan oleh perubahan yang dibutuhkan oleh perubahan yang dibutuhkan ol",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Salin kalimat ini tanpa perubahan: Maya meminjam botol.\n\nAssistant: ",
+          "expected": "Maya meminjam botol.",
+          "answer": "Maya meminjam botol dari botol dan meminjam botol dari botol dari botol dari botol dari botol dari botol dari botol dari botol d",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Wati menemukan kertas.\n\nAssistant: ",
+          "expected": "Wati menemukan kertas.",
+          "answer": "Kertas adalah kertas yang diberikan oleh pengguna dan pengguna yang diberikan oleh pengguna dan pengguna yang diberikan oleh pen",
+          "exact_match": false,
+          "stopped_on_newline": false
+        }
+      ]
+    },
+    {
+      "checkpoint": "checkpoints/gatra-10m-sft-pilot-v2/best.pt",
+      "sha256": "a6a870950b69e419511a0bce4430467d99406094d1106c040b1f892c50adc389",
+      "counts": {
+        "copy": 25,
+        "addition": 25,
+        "extraction": 25,
+        "tydiqa-id": 25
+      },
+      "correct": {
+        "copy": 25,
+        "addition": 1,
+        "extraction": 25,
+        "tydiqa-id": 7
+      },
+      "stopped": {
+        "copy": 25,
+        "addition": 25,
+        "extraction": 25,
+        "tydiqa-id": 24
+      },
+      "samples": [
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Adi membeli botol.\n\nAssistant: ",
+          "expected": "Adi membeli botol.",
+          "answer": "Adi membeli botol.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 23 + 23?\n\nAssistant: ",
+          "expected": "46",
+          "answer": "41",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nRudi memiliki topi berwarna hitam. Topi itu disimpan di lantai.\n\nPertanyaan: Apa warna topi milik Rudi?\n\nAssistant: ",
+          "expected": "hitam",
+          "answer": "hitam",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nSari memiliki payung berwarna hijau. Payung itu disimpan di lantai.\n\nPertanyaan: Apa warna payung milik Sari?\n\nAssistant: ",
+          "expected": "hijau",
+          "answer": "hijau",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 2 + 36. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "38",
+          "answer": "46",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nLina memiliki buku berwarna hitam. Buku itu disimpan di lemari.\n\nPertanyaan: Apa warna buku milik Lina?\n\nAssistant: ",
+          "expected": "hitam",
+          "answer": "hitam",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 7 + 23?\n\nAssistant: ",
+          "expected": "30",
+          "answer": "39",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Tono menyimpan sepatu.\n\nAssistant: ",
+          "expected": "Tono menyimpan sepatu.",
+          "answer": "Tono menyimpan sepatu.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nArung Palakka La Tenri tatta lahir di Lamatta, Mario-ri Wawo, Soppeng, pada tanggal 15 September 1634 sebagai anak dari pasangan La Pottobune', Arung Tana Tengnga, dan istrinya, We Tenri Suwi, Datu Mario-ri Wawo, anak dari La Tenri Ruwa Paduka Sri Sultan Adam, Arumpone Bone.[2]\n\nPertanyaan: Kapan Arung Palakka lahir?\n\nAssistant: ",
+          "expected": "15 September 1634",
+          "answer": "15 September 1634",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Sari meminjam payung.\n\nAssistant: ",
+          "expected": "Sari meminjam payung.",
+          "answer": "Sari meminjam payung.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Salin kalimat ini tanpa perubahan: Sari menemukan sepatu.\n\nAssistant: ",
+          "expected": "Sari menemukan sepatu.",
+          "answer": "Sari menemukan sepatu.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 23 + 38?\n\nAssistant: ",
+          "expected": "61",
+          "answer": "58",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 27 + 39?\n\nAssistant: ",
+          "expected": "66",
+          "answer": "51",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nWati memiliki sepatu berwarna biru. Sepatu itu disimpan di meja.\n\nPertanyaan: Di mana sepatu itu disimpan?\n\nAssistant: ",
+          "expected": "meja",
+          "answer": "meja",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Salin kalimat ini tanpa perubahan: Adi menemukan jaket.\n\nAssistant: ",
+          "expected": "Adi menemukan jaket.",
+          "answer": "Adi menemukan jaket.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nDirigen atau konduktor adalah orang yang memimpin sebuah pertunjukan musik melalui gerak isyarat. Orkestra dan paduan suara biasanya dipimpin oleh seorang dirigen.\n\nPertanyaan: Apa tugas utama seorang konduktor musik?\n\nAssistant: ",
+          "expected": "memimpin sebuah pertunjukan musik melalui gerak isyarat",
+          "answer": "orang yang memimpin sebuah pertunjukan musik",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 8 + 34?\n\nAssistant: ",
+          "expected": "42",
+          "answer": "41",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nMaya memiliki pensil berwarna kuning. Pensil itu disimpan di meja.\n\nPertanyaan: Siapa pemilik pensil itu?\n\nAssistant: ",
+          "expected": "Maya",
+          "answer": "Maya",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 22 + 23?\n\nAssistant: ",
+          "expected": "45",
+          "answer": "41",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nNina memiliki kertas berwarna putih. Kertas itu disimpan di lemari.\n\nPertanyaan: Di mana kertas itu disimpan?\n\nAssistant: ",
+          "expected": "lemari",
+          "answer": "lemari",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nWati memiliki tas berwarna hijau. Tas itu disimpan di rak.\n\nPertanyaan: Siapa pemilik tas itu?\n\nAssistant: ",
+          "expected": "Wati",
+          "answer": "Wati",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Tono membeli kertas.\n\nAssistant: ",
+          "expected": "Tono membeli kertas.",
+          "answer": "Tono membeli kertas.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nRudi memiliki tas berwarna putih. Tas itu disimpan di meja.\n\nPertanyaan: Di mana tas itu disimpan?\n\nAssistant: ",
+          "expected": "meja",
+          "answer": "meja",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nPada 29 Agustus 2016 ia dilaporkan berada di perawatan intensif, setelah menderita stroke.[3][4][5] Kematiannya secara resmi dikonfirmasi pada 2 September 2016.[6]\n\nPertanyaan: Apa penyebab kematian Islam Abduganiyevich Karimov?\n\nAssistant: ",
+          "expected": "menderita stroke",
+          "answer": "Pada 2016",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nWati memiliki sepatu berwarna biru. Sepatu itu disimpan di lemari.\n\nPertanyaan: Siapa pemilik sepatu itu?\n\nAssistant: ",
+          "expected": "Wati",
+          "answer": "Wati",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 17 + 17. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "34",
+          "answer": "28",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nRumah Baanjung (Ba'anjung) adalah nama kolektif untuk rumah tradisional suku Banjar dan suku Dayak Bakumpai.[1] Suku Banjar biasanya menamakan rumah tradisonalnya dengan sebutan Rumah Banjar atau Rumah Bahari.\n\nPertanyaan: Apakah nama rumah adat suku Banjar?\n\nAssistant: ",
+          "expected": "Rumah Baanjung",
+          "answer": "Rumah Banjar",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nOrde Lama dalam sejarah politik Indonesia merujuk kepada masa pemerintahan Soekarno yang berlangsung dari tahun 1945 hingga 1965. Istilah ini tentu saja tidak digunakan pada saat itu, dan baru dicetuskan pada masa pemerintahan Soeharto yang disebut juga dengan Orde Baru.\n\nPertanyaan: Tahun berapa orde lama berakhir?\n\nAssistant: ",
+          "expected": "1965",
+          "answer": "1945",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nDoni memiliki sepatu berwarna hitam. Sepatu itu disimpan di lantai.\n\nPertanyaan: Di mana sepatu itu disimpan?\n\nAssistant: ",
+          "expected": "lantai",
+          "answer": "lantai",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 20 + 27. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "47",
+          "answer": "40",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nSari memiliki botol berwarna merah. Botol itu disimpan di kotak.\n\nPertanyaan: Apa warna botol milik Sari?\n\nAssistant: ",
+          "expected": "merah",
+          "answer": "merah",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nRudi memiliki tas berwarna hijau. Tas itu disimpan di rak.\n\nPertanyaan: Siapa pemilik tas itu?\n\nAssistant: ",
+          "expected": "Rudi",
+          "answer": "Rudi",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nLina memiliki botol berwarna hitam. Botol itu disimpan di kursi.\n\nPertanyaan: Apa warna botol milik Lina?\n\nAssistant: ",
+          "expected": "hitam",
+          "answer": "hitam",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 9 + 17. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "26",
+          "answer": "17",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nAwalnya merupakan sekolah homogen, khusus untuk laki-laki. Sejak 1990 mulai menerima siswa perempuan. Ikatan alumni Kolese Gonzaga, dikenal dengan nama Ikagona (Ikatan Alumni Kolese Gonzaga). Rektor pertama sekaligus kepala sekolah Kolese Gonzaga adalah Pater Joseph Ignatius Gerardus Maria Drost (1925-2005).\n\nPertanyaan: Siapa kepala sekolah Kolese Gonzaga pertama?\n\nAssistant: ",
+          "expected": "Pater Joseph Ignatius Gerardus Maria Drost",
+          "answer": "Awalnya menerima siswa perempuan",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nDedi memiliki penggaris berwarna kuning. Penggaris itu disimpan di rak.\n\nPertanyaan: Di mana penggaris itu disimpan?\n\nAssistant: ",
+          "expected": "rak",
+          "answer": "rak",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Doni menemukan jaket.\n\nAssistant: ",
+          "expected": "Doni menemukan jaket.",
+          "answer": "Doni menemukan jaket.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nWati memiliki kertas berwarna ungu. Kertas itu disimpan di rak.\n\nPertanyaan: Apa warna kertas milik Wati?\n\nAssistant: ",
+          "expected": "ungu",
+          "answer": "ungu",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nNina memiliki sepatu berwarna merah. Sepatu itu disimpan di lantai.\n\nPertanyaan: Siapa pemilik sepatu itu?\n\nAssistant: ",
+          "expected": "Nina",
+          "answer": "Nina",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 34 + 35. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "69",
+          "answer": "57",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nNina memiliki kertas berwarna hitam. Kertas itu disimpan di lemari.\n\nPertanyaan: Apa warna kertas milik Nina?\n\nAssistant: ",
+          "expected": "hitam",
+          "answer": "hitam",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nMaya memiliki tas berwarna putih. Tas itu disimpan di lemari.\n\nPertanyaan: Di mana tas itu disimpan?\n\nAssistant: ",
+          "expected": "lemari",
+          "answer": "lemari",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 3 + 6. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "9",
+          "answer": "6",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nDoni memiliki sepatu berwarna hitam. Sepatu itu disimpan di lantai.\n\nPertanyaan: Apa warna sepatu milik Doni?\n\nAssistant: ",
+          "expected": "hitam",
+          "answer": "hitam",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 32 + 37. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "69",
+          "answer": "57",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 30 + 33. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "63",
+          "answer": "43",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nDoni memiliki buku berwarna ungu. Buku itu disimpan di kursi.\n\nPertanyaan: Apa warna buku milik Doni?\n\nAssistant: ",
+          "expected": "ungu",
+          "answer": "ungu",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nFestival Film Indonesia (sering disingkat FFI) merupakan ajang penghargaan tertinggi bagi dunia perfilman di Indonesia. FFI pertama kali diselenggarakan pada tahun 1955 dan berlanjut pada tahun 1960 dan 1967 (dengan nama Pekan Apresiasi Film Nasional), sebelum akhirnya mulai diselenggarakan secara teratur pada tahun 1973.\n\nPertanyaan: Kapan Festival Film Indonesia pertama diadakan?\n\nAssistant: ",
+          "expected": "1955",
+          "answer": "1960",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nGalilea (bahasa Ibrani: hagalil הגליל, bahasa Arab: al-jaleel الجليل, berarti \"sirkuit\" atau berarti \"bukit\"; English: Galilee; Greek: Γαλιλαία ,Galilaia, Latin: Galilaea) adalah sebuah daerah yang luas di bagian utara tanah Israel dan bertumpang tindih dengan sebagian Distrik Utara Israel.\n\nPertanyaan: Dimanakah letak Galilea?\n\nAssistant: ",
+          "expected": "bagian utara tanah Israel dan bertumpang tindih dengan sebagian Distrik Utara Israe",
+          "answer": "kursi bahasa Ibrani",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nNina memiliki kertas berwarna hijau. Kertas itu disimpan di kursi.\n\nPertanyaan: Apa warna kertas milik Nina?\n\nAssistant: ",
+          "expected": "hijau",
+          "answer": "hijau",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nAdi memiliki buku berwarna kuning. Buku itu disimpan di lemari.\n\nPertanyaan: Apa warna buku milik Adi?\n\nAssistant: ",
+          "expected": "kuning",
+          "answer": "kuning",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nAdi memiliki payung berwarna merah. Payung itu disimpan di kursi.\n\nPertanyaan: Di mana payung itu disimpan?\n\nAssistant: ",
+          "expected": "kursi",
+          "answer": "kursi",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 13 + 31?\n\nAssistant: ",
+          "expected": "44",
+          "answer": "41",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nWati memiliki buku berwarna hijau. Buku itu disimpan di kursi.\n\nPertanyaan: Di mana buku itu disimpan?\n\nAssistant: ",
+          "expected": "kursi",
+          "answer": "kursi",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nBon Jovi adalah kelompok musik rock dari Sayreville, New Jersey, Amerika Serikat. Mereka telah menjual lebih dari 40 juta album di Amerika Serikat dan lebih dari 120 juta keping album di seluruh dunia sejak berdirinya pada tahun 1983.Bon Jovi saat ini terdiri dari Vokalis Jon Bon Jovi, Keyboardist David Bryan, Drummer Tico Torres, Gitaris Phil X, dan Bassist Hugh McDonald.\n\nPertanyaan: Kapan Bon Jovi berdiri ?\n\nAssistant: ",
+          "expected": "1983",
+          "answer": "120 juta keping album di Amerika Serikat",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nMargarita dari Navarra (French: Marguerite, Spanish: Margarita, Italian: Margherita) (skt. 1135 – 12 Agustus 1183) merupakan seorang permaisuri Kerajaan Sisilia selama pemerintahan Gugghiermu I (1154–1166) dan pemangku takhta selama minoritas anaknya, Gugghiermu II.\n\nPertanyaan: Siapakah anak dari Margarita dari Navarra?\n\nAssistant: ",
+          "expected": "Gugghiermu II",
+          "answer": "Margarita",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 10 + 22?\n\nAssistant: ",
+          "expected": "32",
+          "answer": "33",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Maya meminjam tas.\n\nAssistant: ",
+          "expected": "Maya meminjam tas.",
+          "answer": "Maya meminjam tas.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "extraction",
+          "prompt": "User: Baca teks berikut:\nWati memiliki payung berwarna biru. Payung itu disimpan di lemari.\n\nPertanyaan: Apa warna payung milik Wati?\n\nAssistant: ",
+          "expected": "biru",
+          "answer": "biru",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 10 + 18?\n\nAssistant: ",
+          "expected": "28",
+          "answer": "28",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nSetahun setelah Hari Kemerdekaan Malaysia, yaitu pada tanggal 24 Juli 1958, Raja Malaysia, DYMM(Duli Yang Maha Mulia) Almarhum Tuanku Abdul Rahman memberikan gelar 'Diraja' kepada Pasukan Polisi Persekutuan Tanah Melayu. Kemudian pasukan kepolisian Malaysia dikenal dengan nama \"Polis Diraja Persekutuan Tanah Melayu\" atau \"The Royal Federation of Malayan Police\" dan pada tahun 1963 ditukar menjadi \"Polis Diraja Malaysia\".\n\nPertanyaan: Kapan PDRM dibentuk ?\n\nAssistant: ",
+          "expected": "1963",
+          "answer": "1963",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 5 + 33. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "38",
+          "answer": "43",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 7 + 37?\n\nAssistant: ",
+          "expected": "44",
+          "answer": "48",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Sari menemukan penggaris.\n\nAssistant: ",
+          "expected": "Sari menemukan penggaris.",
+          "answer": "Sari menemukan penggaris.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nMasjid ini merupakan contoh sempurna dari arsitektur Islami Iran, dan dipandang sebagai mahakarya Arsitektur Persia. Masjid Shah merupakan mahakarya abadi dari arsitektur di Iran. Masjid ini terdaftar, bersama dengan Taman Naghsh-i Jahan, sebagai Situs Warisan Dunia UNESCO. Pembangunannya dimulai pada tahun 1611, keindahan masjid ini terutama dikarenakan oleh ubin mozaik dengan tujuh warna dan tulisan-tulisan kaligrafinya.\n\nPertanyaan: Kapan Masjid Shah  dibangun ?\n\nAssistant: ",
+          "expected": "1611",
+          "answer": "1611",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nKabupaten Takalar adalah sebuah kabupaten di provinsi Sulawesi Selatan, Indonesia. Ibu kotanya terletak di Pattallassang. Kab. Takalar terdiri dari sembilan kecamatan, yaitu Pattallassang, Polombangkeng Selatan, Polombangkeng Utara, Galesong, Galesong Selatan, Galesong Utara, Sanrobone, Mappakasunggu dan Manggarabombang. Kabupaten ini memiliki luas wilayah 566,51km² dan berpenduduk sebanyak ± 250.000 jiwa.\n\nPertanyaan: berapakah luas Kabupaten Takalar?\n\nAssistant: ",
+          "expected": "566,51km²",
+          "answer": "1. Kabupaten Takalar",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nFrekuensi adalah ukuran jumlah putaran ulang per peristiwa dalam satuan detik dengan satuan Hz.\n\nPertanyaan: Apa yang dimaksud dengan frekuensi ?\n\nAssistant: ",
+          "expected": "ukuran jumlah putaran ulang per peristiwa dalam satuan detik dengan satuan Hz",
+          "answer": "ukuran jumlah putaran ulang",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nAdapun yang merumuskan proklamasi Kemerdekaan Bangsa Indonesia terdiri dari Tadashi Maeda, Tomegoro Yoshizumi, S. Nishijima, S. Miyoshi, Mohammad Hatta, Soekarno, dan Achmad Soebardjo[4].\n\nPertanyaan: Siapa yang merumuskan naskah proklamasi Indonesia?\n\nAssistant: ",
+          "expected": "Tadashi Maeda, Tomegoro Yoshizumi, S. Nishijima, S. Miyoshi, Mohammad Hatta, Soekarno, dan Achmad Soebardjo",
+          "answer": "Tomegoro Yoshizumi",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nSetelah resmi menjadi prajurit TNI Angkatan Udara pada tahun 1954, Djalaludin dgn pangkat Opsir Udara Tingkat 2 (setara Letnan Dua Udara saat ini) ditempatkan di Skadron 2/Angkut yg mengoperasikan pesawat angkut Dakota DC-3 berpangkalan di Lanud Halim Perdanakusuma.\n\nPertanyaan: Kapan Mayor PNB Djalaludin Tantu bergabung dengan TNI ?\n\nAssistant: ",
+          "expected": "1954",
+          "answer": "1954",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nSunan Ampel diperkirakan wafat pada tahun 1481 di Demak dan dimakamkan di sebelah barat Masjid Ampel, Surabaya.\n\nPertanyaan: Kapan Sunan Ampel meninggal?\n\nAssistant: ",
+          "expected": "1481",
+          "answer": "1481",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Salin kalimat ini tanpa perubahan: Nina menemukan pensil.\n\nAssistant: ",
+          "expected": "Nina menemukan pensil.",
+          "answer": "Nina menemukan pensil.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nStardust adalah sebuah buku fantasi bagi dewasa karangan Neil Gaiman, dengan ilustrasi karya Charles Vess. Buku ini diterbitkan di Inggris pada tahun 1998, dan di Indonesia pada tahun 2007 oleh PT Gramedia Pustaka Utama.\n\nPertanyaan: Kapan buku Stardust diterbitkan di Inggris?\n\nAssistant: ",
+          "expected": "1998",
+          "answer": "1998",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 21 + 22?\n\nAssistant: ",
+          "expected": "43",
+          "answer": "31",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 2 + 21. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "23",
+          "answer": "29",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 8 + 38?\n\nAssistant: ",
+          "expected": "46",
+          "answer": "48",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 8 + 13. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "21",
+          "answer": "14",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nPerang Shiffin (Arab: وقعة صفين ) (Mei-Juli 657 Masehi) terjadi semasa zaman fitnah besar atau perang saudara pertama orang Islam dengan pertempuran utama terjadi dari tanggal 26-28 Juli. Pertempuran ini terjadi di antara dua kubu yaitu, Muawiyah bin Abu Sufyan dan Ali bin Abi Talib di tebing Sungai Furat yang kini terletak di Syria (Syam) pada 1 Shafar tahun 37 Hijriah.\n\nPertanyaan: Tahun berapa Pertempuran Shiffin terjadi?\n\nAssistant: ",
+          "expected": "657 Masehi",
+          "answer": "1 Shafar tahun 47",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nMonsters University adalah sebuah film komedi animasi komputer 3D Amerika Serikat yang diproduksi oleh Pixar Animation Studios dan dirilis oleh Walt Disney Pictures.[4] Disutradarai oleh Dan Scanlon dan diproduseri oleh Kori Rae, film ini merupakan film keempatbelas yang diproduksi oleh Pixar, dan prekuel dari film sebelumnya, Monsters, Inc. (2001).\n\nPertanyaan: Kapan film animasi Monster,Inc dirilis?\n\nAssistant: ",
+          "expected": "2001",
+          "answer": "2001",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Tono meminjam payung.\n\nAssistant: ",
+          "expected": "Tono meminjam payung.",
+          "answer": "Tono meminjam payung.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Hitung 9 + 20. Jawab angkanya saja.\n\nAssistant: ",
+          "expected": "29",
+          "answer": "31",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nMuseum Louvre (bahasa Perancis:Musée du Louvre; bahasa Inggris: the Louvre Museum) adalah salah satu museum terbesar, museum seni yang paling banyak dikunjungi dan sebuah monumen bersejarah di dunia. Museum Louvre terletak di Rive Droite Seine, Arondisemen pertama di Paris, Perancis. Hampir 35.000 benda dari zaman prasejarah hingga abad ke-19 dipamerkan di area seluas 60.600 meter persegi.\n\nPertanyaan: Berapa luas Museum Louvre?\n\nAssistant: ",
+          "expected": "60.600 meter persegi",
+          "answer": "19 Museum Louvre",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nFrekuensi adalah ukuran jumlah putaran ulang per peristiwa dalam satuan detik dengan satuan Hz.\n\nPertanyaan: Apa itu frekuensi ?\n\nAssistant: ",
+          "expected": "ukuran jumlah putaran ulang per peristiwa dalam satuan detik dengan satuan Hz",
+          "answer": "ukuran jumlah putaran ulang per per per per per per per per per per per per per per per per per per per per per per per per per",
+          "exact_match": false,
+          "stopped_on_newline": false
+        },
+        {
+          "source": "addition",
+          "prompt": "User: Berapa hasil 1 + 5?\n\nAssistant: ",
+          "expected": "6",
+          "answer": "5",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nKarapas adalah cangkang keras yang melindungi organ dalam pada tubuh crustacea. Karapas merupakan penutup sefalothoraks yang tersusun dari zat tanduk atau kitin yang tebal. Fungsi karapas adalah untuk melindungi organ-organ bagian dalam seperti insang, alat pencernaan termasuk organ hepatopankreas, jantung dan organ reproduksi.\n\nPertanyaan: Apa itu karapas ?\n\nAssistant: ",
+          "expected": "cangkang keras yang melindungi organ dalam pada tubuh crustacea",
+          "answer": "karapas adalah untuk melindungi organ dalam pada tubuh crustacea",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Salin kalimat ini tanpa perubahan: Sari menemukan penggaris.\n\nAssistant: ",
+          "expected": "Sari menemukan penggaris.",
+          "answer": "Sari menemukan penggaris.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Adi menyimpan payung.\n\nAssistant: ",
+          "expected": "Adi menyimpan payung.",
+          "answer": "Adi menyimpan payung.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nFilm Fences mendapatkan $57,682,904 di Amerika Utara dan $6,731,857 di negara lain. Total pendapatan yang dihasilkan oleh film ini mencapai $64,414,761, melebihi anggaran produksi film $24 juta.[2]\n\nPertanyaan: Berapa biaya produksi film Fences ?\n\nAssistant: ",
+          "expected": "$24 juta",
+          "answer": "$6,731,857",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Salin kalimat ini tanpa perubahan: Sari menemukan topi.\n\nAssistant: ",
+          "expected": "Sari menemukan topi.",
+          "answer": "Sari menemukan topi.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "tydiqa-id",
+          "prompt": "User: Baca teks berikut:\nReal Brasil atau R$, adalah mata uang resmi negara Brasil sejak tahun 1994 menggantikan mata uang Cruzeiro Real Brasil. Mata uang ini setiap satu-satunya dibagi menjadi 100 centavos. Mata uang ini terbagi menjadi 1,2,5,10,20,50,100 reals, dicetak dan diatur penggunaannya oleh Banco Central do Brasil, dengan kode ISO 4217 BRL.\n\nPertanyaan: mata uang apakah yang digunakan di brazil?\n\nAssistant: ",
+          "expected": "Real Brasil",
+          "answer": "100",
+          "exact_match": false,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Maya meminjam botol.\n\nAssistant: ",
+          "expected": "Maya meminjam botol.",
+          "answer": "Maya meminjam botol.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Maya menemukan pensil.\n\nAssistant: ",
+          "expected": "Maya menemukan pensil.",
+          "answer": "Maya menemukan pensil.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Maya membeli penggaris.\n\nAssistant: ",
+          "expected": "Maya membeli penggaris.",
+          "answer": "Maya membeli penggaris.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Adi menemukan jaket.\n\nAssistant: ",
+          "expected": "Adi menemukan jaket.",
+          "answer": "Adi menemukan jaket.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Nina menemukan kertas.\n\nAssistant: ",
+          "expected": "Nina menemukan kertas.",
+          "answer": "Nina menemukan kertas.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Dedi membeli tas.\n\nAssistant: ",
+          "expected": "Dedi membeli tas.",
+          "answer": "Dedi membeli tas.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Nina menemukan payung.\n\nAssistant: ",
+          "expected": "Nina menemukan payung.",
+          "answer": "Nina menemukan payung.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Lina membeli botol.\n\nAssistant: ",
+          "expected": "Lina membeli botol.",
+          "answer": "Lina membeli botol.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Salin kalimat ini tanpa perubahan: Wati membaca tas.\n\nAssistant: ",
+          "expected": "Wati membaca tas.",
+          "answer": "Wati membaca tas.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Salin kalimat ini tanpa perubahan: Maya meminjam botol.\n\nAssistant: ",
+          "expected": "Maya meminjam botol.",
+          "answer": "Maya meminjam botol.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        },
+        {
+          "source": "copy",
+          "prompt": "User: Tulis ulang persis: Wati menemukan kertas.\n\nAssistant: ",
+          "expected": "Wati menemukan kertas.",
+          "answer": "Wati menemukan kertas.",
+          "exact_match": true,
+          "stopped_on_newline": true
+        }
+      ]
+    }
+  ]
+}
