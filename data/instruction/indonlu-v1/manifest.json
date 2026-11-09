@@ -1,0 +1,144 @@
+{
+  "hf_dataset": "indonlp/indonlu",
+  "hf_revision": "939bfb4e87cd0f4f717f4222ec19c55cdc302982",
+  "upstream_revision": "ce728f6926a36174b9923dfe49d6a6839b6e9bb7",
+  "raw_files": {
+    "facqa-train.csv": {
+      "url": "https://raw.githubusercontent.com/IndoNLP/indonlu/ce728f6926a36174b9923dfe49d6a6839b6e9bb7/dataset/facqa_qa-factoid-itb/train_preprocess.csv",
+      "sha256": "cc738d6ec42cfb76eb36899616361c5d789ff8408afc94fbc2cdd102e7ce00cc",
+      "bytes": 2073762
+    },
+    "facqa-validation.csv": {
+      "url": "https://raw.githubusercontent.com/IndoNLP/indonlu/ce728f6926a36174b9923dfe49d6a6839b6e9bb7/dataset/facqa_qa-factoid-itb/valid_preprocess.csv",
+      "sha256": "ad0fa5056b141b4898f6de37f68416fe4e01c58e1e960a97e45b3b6b7cdfb5fd",
+      "bytes": 258917
+    },
+    "facqa-test.csv": {
+      "url": "https://raw.githubusercontent.com/IndoNLP/indonlu/ce728f6926a36174b9923dfe49d6a6839b6e9bb7/dataset/facqa_qa-factoid-itb/test_preprocess.csv",
+      "sha256": "30fe94736b1cc5532b7c60842d7bb06787e90623ea33943ac9150f32c3f4b6ca",
+      "bytes": 259289
+    },
+    "nergrit-train.txt": {
+      "url": "https://raw.githubusercontent.com/IndoNLP/indonlu/ce728f6926a36174b9923dfe49d6a6839b6e9bb7/dataset/nergrit_ner-grit/train_preprocess.txt",
+      "sha256": "4bbef1355fad21b405b5c511a7c80331a5ee71c91db9b82dc03efda5cb99f964",
+      "bytes": 522268
+    },
+    "nergrit-validation.txt": {
+      "url": "https://raw.githubusercontent.com/IndoNLP/indonlu/ce728f6926a36174b9923dfe49d6a6839b6e9bb7/dataset/nergrit_ner-grit/valid_preprocess.txt",
+      "sha256": "330ee7307f40f5e999110e02390243c07180b78c2e2a06f8a529ab46b0f4e907",
+      "bytes": 64884
+    },
+    "nergrit-test.txt": {
+      "url": "https://raw.githubusercontent.com/IndoNLP/indonlu/ce728f6926a36174b9923dfe49d6a6839b6e9bb7/dataset/nergrit_ner-grit/test_preprocess.txt",
+      "sha256": "30c4fbcdfc6d4093c4fc802b00fa1b0842df548317f0b7f152669f9bd805d816",
+      "bytes": 64073
+    },
+    "smsa-train.tsv": {
+      "url": "https://raw.githubusercontent.com/IndoNLP/indonlu/ce728f6926a36174b9923dfe49d6a6839b6e9bb7/dataset/smsa_doc-sentiment-prosa/train_preprocess.tsv",
+      "sha256": "50f38ceed9b31521bf1581e126620532cc9b790712938159a2cdcf6906977a9b",
+      "bytes": 2186718
+    },
+    "smsa-validation.tsv": {
+      "url": "https://raw.githubusercontent.com/IndoNLP/indonlu/ce728f6926a36174b9923dfe49d6a6839b6e9bb7/dataset/smsa_doc-sentiment-prosa/valid_preprocess.tsv",
+      "sha256": "6ab41ddc9d58a35086f05ebd2e209c74cb03d87d4f51d6abdfba674eafbefa74",
+      "bytes": 246974
+    },
+    "smsa-test.tsv": {
+      "url": "https://raw.githubusercontent.com/IndoNLP/indonlu/ce728f6926a36174b9923dfe49d6a6839b6e9bb7/dataset/smsa_doc-sentiment-prosa/test_preprocess.tsv",
+      "sha256": "4e8016daa8e4e1b193f2a28a79d3a7804dd4e3f926a3ab7e8a64264f5f416a6f",
+      "bytes": 75949
+    },
+    "upstream-LICENSE": {
+      "url": "https://raw.githubusercontent.com/IndoNLP/indonlu/ce728f6926a36174b9923dfe49d6a6839b6e9bb7/LICENSE",
+      "sha256": "bd9d250c0f04338b3d3570e3ccbfba8d821d1d767f929e2f5884a250fe51dff0",
+      "bytes": 11131
+    },
+    "hf-README.md": {
+      "url": "https://huggingface.co/datasets/indonlp/indonlu/resolve/939bfb4e87cd0f4f717f4222ec19c55cdc302982/README.md",
+      "sha256": "8a65fff733365b2fd1d5a026e89dd35a027abab79a13b9ec43e49420e8b8a4e2",
+      "bytes": 32477
+    },
+    "hf-indonlu.py": {
+      "url": "https://huggingface.co/datasets/indonlp/indonlu/resolve/939bfb4e87cd0f4f717f4222ec19c55cdc302982/indonlu.py",
+      "sha256": "bbdd54e8554f17b71630490e0b669f6f84b9f8f1095ae96f80f519facb335856",
+      "bytes": 32655
+    }
+  },
+  "output_sha256": {
+    "train.jsonl": "6b24e25b9da506a6055fb4c130d82d87ba38c0a3406d61356546da9b59b9e088",
+    "validation.jsonl": "b6a4d87f792b8803d23d6f99fa29c5aafbaa264f6c2e48e500418b3c60ce06ce",
+    "test.jsonl": "37aa4fedcbde9aafa9ff2cf6105db0bd65e2fcb554365b515c33214936e6db77"
+  },
+  "max_bytes": 512,
+  "truncation": false,
+  "split_policy": "Keep original splits; remove lower-priority overlapping contexts (test > validation > train).",
+  "counts": {
+    "train": {
+      "indonlu-facqa": 1196,
+      "indonlu-nergrit": 4616,
+      "indonlu-smsa": 10530
+    },
+    "validation": {
+      "indonlu-facqa": 175,
+      "indonlu-nergrit": 593,
+      "indonlu-smsa": 1231
+    },
+    "test": {
+      "indonlu-facqa": 226,
+      "indonlu-nergrit": 582,
+      "indonlu-smsa": 498
+    }
+  },
+  "ner_empty_counts": {
+    "train": 2507,
+    "validation": 312,
+    "test": 313
+  },
+  "audit": {
+    "facqa:test:duplicate_prompt": 1,
+    "facqa:test:kept": 226,
+    "facqa:test:not_one_answer_span": 8,
+    "facqa:test:raw_rows": 311,
+    "facqa:test:too_long": 76,
+    "facqa:train:cross_split_context_removed": 896,
+    "facqa:train:kept": 1196,
+    "facqa:train:not_one_answer_span": 25,
+    "facqa:train:raw_rows": 2495,
+    "facqa:train:too_long": 378,
+    "facqa:validation:cross_split_context_removed": 83,
+    "facqa:validation:kept": 175,
+    "facqa:validation:not_one_answer_span": 1,
+    "facqa:validation:raw_rows": 311,
+    "facqa:validation:too_long": 52,
+    "nergrit:test:kept": 582,
+    "nergrit:test:raw_rows": 209,
+    "nergrit:test:too_long": 45,
+    "nergrit:train:kept": 4616,
+    "nergrit:train:raw_rows": 1672,
+    "nergrit:train:too_long": 400,
+    "nergrit:validation:kept": 593,
+    "nergrit:validation:raw_rows": 209,
+    "nergrit:validation:too_long": 34,
+    "smsa:test:kept": 498,
+    "smsa:test:raw_rows": 500,
+    "smsa:test:too_long": 2,
+    "smsa:train:cross_split_context_removed": 16,
+    "smsa:train:duplicate_prompt": 63,
+    "smsa:train:kept": 10530,
+    "smsa:train:raw_rows": 11000,
+    "smsa:train:spam_keyword": 1,
+    "smsa:train:too_long": 390,
+    "smsa:validation:kept": 1231,
+    "smsa:validation:raw_rows": 1260,
+    "smsa:validation:spam_keyword": 1,
+    "smsa:validation:too_long": 28
+  },
+  "license_note": "HF card declares MIT; pinned upstream root LICENSE is Apache-2.0. Preserve source attribution; per-corpus content rights are not resolved by these conflicting repository labels.",
+  "limitations": [
+    "Technically filtered candidates, not human-verified labels.",
+    "Tokenized QA/NER text reconstructed with spaces, including punctuation.",
+    "Existing Cendol/pretraining exposure is not exhaustively checked; held-out splits are not a clean capability benchmark.",
+    "FacQA accepts exactly one valid contiguous BIO answer span; NER emits three typed questions per input.",
+    "Length filtering changes the source distribution; test is reserved, not used for tuning."
+  ]
+}
