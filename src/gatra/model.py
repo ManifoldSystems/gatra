@@ -195,7 +195,10 @@ class Gatra(nn.Module):
         temperature: float = 1.0,
         top_k: int | None = None,
         top_p: float | None = None,
+        stop_token_id: int | None = None,
     ) -> torch.Tensor:
+        if stop_token_id is not None and idx.size(0) != 1:
+            raise ValueError('Stop-token generation currently supports batch size 1')
         for _ in range(max_new_tokens):
             logits, _ = self(idx[:, -self.config.block_size :])
             logits = logits[:, -1, :] / max(temperature, 1e-8)
@@ -211,6 +214,8 @@ class Gatra(nn.Module):
             probs = torch.softmax(logits, dim=-1)
             next_id = torch.multinomial(probs, num_samples=1)
             idx = torch.cat((idx, next_id), dim=1)
+            if stop_token_id is not None and next_id.item() == stop_token_id:
+                break
         return idx
 
     def param_count(self) -> int:

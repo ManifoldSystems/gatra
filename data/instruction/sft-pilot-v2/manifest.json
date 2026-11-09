@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "seed": 20261109,
+  "max_bytes": 512,
+  "ending": "newline byte 10",
+  "counts": {
+    "train": {
+      "addition": 1466,
+      "copy": 1088,
+      "extraction": 5262,
+      "tydiqa-id": 1511
+    },
+    "validation": {
+      "addition": 172,
+      "copy": 112,
+      "extraction": 570,
+      "tydiqa-id": 157
+    }
+  },
+  "limitations": [
+    "Synthetic held-out results measure template/task generalization, not broad chat ability.",
+    "TyDi QA remains heuristically filtered, not fully human-verified.",
+    "No paraphrase or Alpaca examples; narrow experimental curriculum."
+  ],
+  "train_sha256": "a330eacf3e6afb05875779717a81bb7848fc5937540a90c1f0b34f33259fe55f",
+  "validation_sha256": "572df470504400e6cacb99c16a9b5a78613da0fccb1e14f66bf498e180b9d1d3"
+}

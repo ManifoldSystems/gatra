@@ -21,6 +21,7 @@ def generate_text(
     top_p: float | None = None,
     device: str | None = None,
     config_override=None,
+    stop_at_newline: bool = False,
 ) -> str:
     payload = torch.load(checkpoint, map_location="cpu", weights_only=False)
     saved = payload.get("config", {})
@@ -53,12 +54,15 @@ def generate_text(
     else:
         idx = torch.zeros((1, 1), dtype=torch.long, device=device)
     gen = config.generate
+    if stop_at_newline and config.data.tokenizer not in ('', 'byte'):
+        raise ValueError('stop_at_newline requires the byte tokenizer')
     tokens = model.generate(
         idx,
         max_new_tokens=max_new_tokens or gen.max_new_tokens,
         temperature=temperature if temperature is not None else gen.temperature,
         top_k=top_k if top_k is not None else gen.top_k,
         top_p=top_p if top_p is not None else gen.top_p,
+        stop_token_id=10 if stop_at_newline else None,
     )
     return tokenizer.decode(tokens[0].tolist())
 
@@ -84,6 +88,7 @@ def generate_with_args(args: argparse.Namespace) -> str:
         top_p=args.top_p,
         device=args.device,
         config_override=config,
+        stop_at_newline=getattr(args, 'stop_at_newline', False),
     )
 
 
@@ -95,6 +100,7 @@ def main() -> None:
     parser.add_argument("--temperature", type=float)
     parser.add_argument("--top-k", type=int)
     parser.add_argument("--top-p", type=float)
+    parser.add_argument('--stop-at-newline', action='store_true', help='End a byte-tokenized single-line answer at its first generated newline')
     parser.add_argument("--device", help="auto, cpu, mps, cuda, cuda:N, rocm, rocm:N")
     parser.add_argument(
         "--tokenizer",

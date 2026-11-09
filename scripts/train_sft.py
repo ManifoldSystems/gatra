@@ -85,6 +85,7 @@ def main():
     parser.add_argument('--epochs', type=int, default=2)
     parser.add_argument('--batch-size', type=int, default=16)
     parser.add_argument('--lr', type=float, default=1e-5)
+    parser.add_argument('--prepared', action='store_true', help='Use all rows of an independently prepared dataset')
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=False)
     torch.set_num_threads(4)
@@ -102,8 +103,16 @@ def main():
     # New objective: intentionally reset optimizer/scaler; base weights retained.
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, betas=(0.9, 0.95), weight_decay=0.1)
     scaler = torch.amp.GradScaler('cuda')
-    train, train_counts, train_audit = select_rows(args.data/'train.jsonl', {'alpaca-id':4000,'tydiqa-id':2000,'cendol':1000})
-    val, val_counts, val_audit = select_rows(args.data/'validation.jsonl', {'alpaca-id':200,'tydiqa-id':200,'cendol':200})
+    if args.prepared:
+        train = [json.loads(line) for line in (args.data/'train.jsonl').read_text().splitlines()]
+        val = [json.loads(line) for line in (args.data/'validation.jsonl').read_text().splitlines()]
+        train_counts, val_counts = (dict(Counter(r['source'] for r in rows)) for rows in (train, val))
+        train_audit = val_audit = {'prepared_input': True}
+        for row in train + val:
+            batchify([row], torch.device('cpu'))
+    else:
+        train, train_counts, train_audit = select_rows(args.data/'train.jsonl', {'alpaca-id':4000,'tydiqa-id':2000,'cendol':1000})
+        val, val_counts, val_audit = select_rows(args.data/'validation.jsonl', {'alpaca-id':200,'tydiqa-id':200,'cendol':200})
     assert train and val
     for field in ('prompt_hash', 'group_id'):
         assert not {r[field] for r in train} & {r[field] for r in val}
