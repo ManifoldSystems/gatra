@@ -1,0 +1,27 @@
+# Declarative acquisition plan. Code/config live in Git; data live on the server.
+version = 1
+server_root = "/workspace/gatra"
+output_root = "data/instruction/full-id-v1"
+log_root = "logs/server-data-v1"
+revision_policy = "Resolve HF revision at acquisition; record exact SHA in each output manifest."
+format = "jsonl.gz"
+
+[[sources]]
+name = "aya-collection-id"
+dataset = "CohereLabs/aya_collection_language_split"
+subset = "indonesian"
+purpose = "instruction"
+output = "data/instruction/full-id-v1/aya-collection-id"
+command = ["scripts/acquire_full_id.py", "--source", "aya", "--out-dir", "data/instruction/full-id-v1"]
+
+[[sources]]
+name = "eos"
+dataset = "aitf-komdigi/EOS-Continued-Pretraining-Dataset"
+purpose = "pretraining"
+output = "data/instruction/full-id-v1/tasks/eos"
+command = ["scripts/prepare_local_tasks.py", "--sources", "eos", "--out", "data/instruction/full-id-v1/tasks"]
+
+[training]
+status = "pending server-side acquisition and inventory"
+base_checkpoint = "checkpoints/gatra-10m-expanded-ctx512-fp16/latest.pt"
+notes = "Raw exports are not training bins or assistant-masked SFT rows. Preserve held-out splits before preparing either objective."

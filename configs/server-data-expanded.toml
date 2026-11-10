@@ -1,0 +1,49 @@
+# Independent second batch; Aya/EOS are owned by server-data.toml.
+version = 1
+server_root = "/workspace/gatra"
+log_root = "logs/server-data-expanded-v1"
+continue_on_error = true
+revision_policy = "Resolve HF SHA at acquisition; record in source manifest. IndoSum archive is SHA-256 pinned in its manifest."
+format = "jsonl.gz"
+
+[[sources]]
+name = "indosum"
+dataset = "kata-ai/indosum"
+output = "data/instruction/full-id-v1/indosum"
+command = ["scripts/acquire_full_id.py", "--source", "indosum", "--out-dir", "data/instruction/full-id-v1"]
+
+[[sources]]
+name = "itqa"
+dataset = "rizki-syazali/itqa-flatten-header"
+output = "data/instruction/full-id-v1/tasks/itqa"
+command = ["scripts/prepare_local_tasks.py", "--sources", "itqa", "--out", "data/instruction/full-id-v1/tasks"]
+
+[[sources]]
+name = "amr-nli"
+dataset = "fabhiansan/XSUM-Indonesia-AMR-NLI"
+output = "data/instruction/full-id-v1/tasks/amr-nli"
+command = ["scripts/prepare_local_tasks.py", "--sources", "amr-nli", "--out", "data/instruction/full-id-v1/tasks"]
+
+[[sources]]
+name = "indo-ner"
+dataset = "treamyracle/indo-ner"
+output = "data/instruction/full-id-v1/tasks/indo-ner"
+command = ["scripts/prepare_local_tasks.py", "--sources", "indo-ner", "--out", "data/instruction/full-id-v1/tasks"]
+
+[[sources]]
+name = "bloom"
+dataset = "Firmansyah-Ibrahim/indo-bloom-corpus"
+output = "data/instruction/full-id-v1/tasks/bloom"
+command = ["scripts/prepare_local_tasks.py", "--sources", "bloom", "--out", "data/instruction/full-id-v1/tasks"]
+
+[[sources]]
+name = "stem"
+dataset = "InfoBayAI/Indonesian-STEM-Textbook-Dataset"
+output = "data/instruction/full-id-v1/tasks/stem"
+command = ["scripts/prepare_local_tasks.py", "--sources", "stem", "--out", "data/instruction/full-id-v1/tasks"]
+
+[[sources]]
+name = "non-stem"
+dataset = "InfoBayAI/Indonesian-Non-STEM-Textbook-Dataset"
+output = "data/instruction/full-id-v1/tasks/non-stem"
+command = ["scripts/prepare_local_tasks.py", "--sources", "non-stem", "--out", "data/instruction/full-id-v1/tasks"]
