@@ -1,0 +1,10 @@
+server_root = "/workspace/gatra"
+source = "data/instruction/full-id-v1/tasks/eos"
+bins = "data/bin/gatra-10m-eos-v1"
+base = "checkpoints/gatra-10m-expanded-ctx512-fp16/latest.pt"
+name = "gatra-10m-eos-v1"
+batch_size = 16
+learning_rate = 0.00005
+token_passes = 1.0
+eval_interval = 1000
+eval_iters = 50
