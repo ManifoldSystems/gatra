@@ -49,6 +49,32 @@ validation and generation after completion before choosing the next SFT base.
 
 ## Overnight context extension
 
+### First EOS pass completed
+
+Completed 80,328 updates / 658,046,976 attempted byte tokens in 69.6 minutes,
+averaging 157,559 byte tok/s. 30 AMP updates were skipped (~0.037%). Final EOS
+validation loss was 0.7778 versus 0.8862 at initialization; best was selected at
+step 63,000. Sampled evaluation windows vary during training.
+
+Fixed general-text validation on the original shared windows regressed:
+
+| Checkpoint | Fixed general-text loss |
+| --- | ---: |
+| Original pretraining control | 0.971670 |
+| EOS best (step 63,000) | 1.167840 |
+| EOS latest (step 80,328) | 1.175220 |
+
+Latest is approximately 20.94% worse than the control on this metric. Lower EOS
+loss does not imply better general language performance. The already queued
+overnight run uses EOS latest per its declared plan; it remains an EOS adaptation
+experiment, not a validated replacement for the original pretraining control.
+Use the final paired evaluation before choosing an SFT base. Raw outputs remain
+in `checkpoints/eval-eos-v1/fixed/` on the server. The evaluator's different-mix
+warning reflects deliberately evaluating EOS weights on the original corpus.
+
+Best SHA-256: `e3af2de8a6b2320679da23d44498d1fbe7ce65ae48c82f44a6058a78c2ada23f`.
+Latest SHA-256: `adfea8ac652fb066c3051d3f65871026cda3a2b3252770c303e50807f19ee1f0`.
+
 User approved a longer overnight run (approximately 23:00 to 09:00 window).
 `configs/server-eos-overnight.toml` and `scripts/train_eos_overnight.py` queue an
 automatic continuation after PID 20103 exits successfully. First-pass checkpoints
