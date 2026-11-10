@@ -1,0 +1,15 @@
+server_root = "/workspace/gatra"
+wait_pid = 20103
+previous_log = "checkpoints/gatra-10m-eos-v1.log"
+checkpoint = "checkpoints/gatra-10m-eos-v1/latest.pt"
+name = "gatra-10m-eos-ctx1024-overnight"
+context = 1024
+batch_size = 32
+learning_rate = 0.00003
+warmup_iters = 200
+decay_frac = 0.30
+min_lr_ratio = 0.1
+corpus_token_passes = 6.0
+max_time = "8h"
+eval_interval = 1000
+eval_iters = 50

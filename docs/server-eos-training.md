@@ -46,3 +46,46 @@ acquired instruction sources are not included in this stage. SFT preparation and
 selection follow the pretraining result; there is no claim that all downloaded
 collections have already been trained. Compare original fixed general-text
 validation and generation after completion before choosing the next SFT base.
+
+## Overnight context extension
+
+User approved a longer overnight run (approximately 23:00 to 09:00 window).
+`configs/server-eos-overnight.toml` and `scripts/train_eos_overnight.py` queue an
+automatic continuation after PID 20103 exits successfully. First-pass checkpoints
+remain in their original directory. The new directory is
+`checkpoints/gatra-10m-eos-ctx1024-overnight/`; stdout is the adjacent `.log`.
+
+Configuration: context 1,024 **bytes**, batch 32 (32,768 tokens/update), FP16,
+LR 3e-5, 200-step warmup, WSD with 30% final decay to 3e-6, and 120,492 updates
+(3,948,281,856 attempted tokens, about six corpus-size token budgets). Maximum
+runtime is eight hours for the continuation; fixed evaluation follows. At the
+measured synthetic speed it takes about 5.9 hours; allow roughly 6–7 hours for
+real batches/evaluation plus the remaining first pass. This is an estimate, not
+a promised wall-clock completion time.
+
+Weights and optimizer moments are retained from the completed first pass.
+Step/token counters and best-validation tracking reset for the changed context;
+parent counters/hash are retained in the manifest. GradScaler restarts at its
+default scale. Model size stays 10.7M. Epoch-equivalent budgets use random window
+sampling, not guaranteed full document traversal. Longer training is not evidence
+of better generalization; retain best and latest and compare fixed general-text
+validation after completion.
+
+Synthetic CUDA benchmark (25 updates, last 20 timed; original process paused
+briefly and resumed in `finally`):
+
+| Context | Batch | Byte tok/s | Peak allocated MiB |
+| --- | ---: | ---: | ---: |
+| 1,024 | 8 | 153,440 | 1,655 |
+| 1,024 | 16 | 174,268 | 3,135 |
+| 1,024 | 32 | 185,778 | 6,093 |
+| 2,048 | 8 | 146,717 | 3,136 |
+
+Each probe had one skipped FP16 update during scaler adaptation. These are random
+byte-input performance probes, not quality evaluations. Actual total GPU memory
+includes the paused process and CUDA overhead. Context 1,024/batch 32 was selected.
+
+Correction: the first EOS run inherited `decay_frac=0` from its base checkpoint,
+so its LR remains flat after warmup despite the earlier intended decay description.
+The queued overnight run explicitly sets `decay_frac=0.30`; warmup peak and final
+LR were verified against `schedule_lr` locally.
