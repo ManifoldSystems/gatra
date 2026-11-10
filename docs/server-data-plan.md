@@ -96,3 +96,42 @@ are grouped by book and reconstructed as pages. The existing deterministic
 non-STEM split may yield empty validation, so that manifest must be checked and
 the book split corrected before any evaluation. These acquisition exports are
 not claimed to be clean, unique, or ready for the current 512-byte SFT trainer.
+
+### Expanded batch completed (2026-11-10)
+
+All seven acquisition processes exited with code 0 and produced manifests on
+the server. These counts describe prepared exports, not examples used in training.
+
+| Source | Train | Validation | Test | Unit |
+| --- | ---: | ---: | ---: | --- |
+| IndoSum fold 1 | 14,262 | 750 | 3,762 | article/summary pairs |
+| ITQA | 2,053 | — | 501 | table QA pairs |
+| AMR-NLI | 27,060 | 9,730 | 6,151 | labeled pairs |
+| Indo-NER | 118,726 | 6,316 | — | silver NER examples |
+| Indo-Bloom | 2,095 | 112 | — | question-generation examples |
+| STEM | 1,352 | 154 | — | reconstructed pages |
+| Non-STEM | 1,815 | 0 | — | reconstructed pages |
+
+Non-STEM validation is indeed empty; a book-level split correction is needed
+before evaluation. ITQA has upstream train/test but no validation; any development
+split must be derived from training groups, not from the reserved test set.
+Raw snapshots, compressed exports, revision/hash manifests and acquisition logs
+remain on the server.
+
+The first batch also completed with both processes returning code 0:
+
+| Source | Train | Validation | Test | Unit |
+| --- | ---: | ---: | ---: | --- |
+| Aya Collection Indonesian | 3,609,784 | 276,648 | 279,836 | instruction pairs |
+| EOS AITF | 130,649 | 7,040 | — | documents |
+
+Aya revision: `a3af2fde4b4cb5b2775830b11244a1a20b5f004f`.
+EOS revision: `320c28786b5fb426fcee220a41ff46092e8b9440`.
+Aya train serialized text totals 1,688,396,469 UTF-8 bytes (not yet a training
+token count). Its source inventory includes 786 Aya-Dataset records, confirming
+overlap risk with the standalone Aya Dataset. Large translated SODA and
+Wiki-split subsets dominate the collection; records are not unique underlying
+tasks. EOS removes 4,280 exact duplicates within its acquisition.
+
+All nine planned sources are now exported on the server. No training on these
+new full collections has been launched by the acquisition runner.
