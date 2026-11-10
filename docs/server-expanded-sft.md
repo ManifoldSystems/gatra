@@ -44,7 +44,50 @@ phrase. Commerce examples were short and template-like. PRDECT has subjective
 labels: a review praising softness but complaining about color is labeled
 Positive/Happy. These remain source-annotated experimental candidates.
 
-## Experiment contract
+## Completed results
+
+Training completed all 4,845 attempted updates, with zero skipped AMP updates
+and 18,309,342 processed input bytes. Final assistant validation loss: 0.112684.
+Best checkpoint SHA-256:
+`6a39ffbd9b9df2ffa90c0f418bb85256d389285153721109c3ba6f8e5b34ec80`.
+
+Paired development generation uses FP32 greedy top-k=1, newline stopping and
+128 new bytes for both pretraining and SFT. Select 25 hash-ranked validation
+examples per source, or all 16 available IndoQA examples. Strict stripped-string
+exact match against the retained reference:
+
+| Task | Pretraining | SFT v3 |
+| --- | ---: | ---: |
+| Copy | 0/25 | 25/25 |
+| Synthetic extraction | 0/25 | 25/25 |
+| SmSA | 0/25 | 21/25 |
+| Commerce | 0/25 | 20/25 |
+| NERGrit | 0/25 | 14/25 |
+| TyDi QA | 0/25 | 9/25 |
+| PRDECT (full sentiment/emotion JSON) | 0/25 | 8/25 |
+| FacQA | 0/25 | 4/25 |
+| IndoQA | 0/16 | 2/16 |
+| Total | 0/216 | 128/216 (59.3%) |
+
+Newline termination: 49/216 before, 215/216 after. These are small development
+samples, not a test-set benchmark. NER aggregate includes empty-entity examples;
+entity-present accuracy has not yet been broken out. Exact match can reject
+valid alternate QA answers and equivalent JSON formatting. Copy/extraction use
+familiar templates. V2's aggregate score uses a different task mix and should
+not be directly compared with this total.
+
+General-text validation loss on the shared 100 FP32 256-byte batches worsens
+from 0.971670 to 1.032489 (about 6.26%). Preserve pretraining as the general-text
+control: more SFT data improved narrow instruction tasks but did not establish
+a better general chatbot. Diagnostic probes still miss the second cat's name,
+repeat `2 + 3` instead of calculating it, and fail Japan's capital question.
+
+Full raw results remain on the server at
+`checkpoints/eval-sft-expanded-v3/{tasks.json,fixed/results.json}`; probes are in
+`checkpoints/gatra-10m-sft-expanded-v3/probes.json`. No new dataset or checkpoint
+was downloaded to the Mac.
+
+## Training configuration
 
 - Acquire IndoQA, PRDECT-ID and e-commerce sentiment using
   `scripts/prepare_local_tasks.py`; resolved HF revisions, original split/index
