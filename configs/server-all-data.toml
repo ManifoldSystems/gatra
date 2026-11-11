@@ -1,0 +1,34 @@
+server_root = "/workspace/gatra"
+name = "gatra-10m-all-data-v1"
+bins = "data/bin/gatra-10m-all-data-v1"
+base = "checkpoints/gatra-10m-expanded-ctx512-fp16/latest.pt"
+context = 1024
+batch_size = 32
+learning_rate = 0.00003
+token_passes = 1.0
+max_time = "8h"
+# Include each prepared source once, not previous SFT mixtures again.
+base_files = [
+  "data/fineweb2hq-id.jsonl", "data/wiki-id.jsonl", "data/culturax-id.jsonl",
+  "data/cendol-wikihow-id.jsonl", "data/cendol-puisi-id.jsonl",
+  "data/kopi-news-id.jsonl", "data/newspapers-2018-id.jsonl",
+  "data/aya-id.jsonl", "data/gatra-identity.jsonl", "data/sample.jsonl"
+]
+split_dirs = [
+  "data/community/corpus-indonesia", "data/community/recipes",
+  "data/community/javanese-lexicon", "data/instruction/alpaca-id",
+  "data/instruction/oasst1-multilingual", "data/instruction/indonlu-v1",
+  "data/instruction/server-expanded-v1/tasks/indoqa",
+  "data/instruction/server-expanded-v1/tasks/prdect",
+  "data/instruction/server-expanded-v1/tasks/commerce",
+  "data/instruction/full-id-v1/aya-collection-id",
+  "data/instruction/full-id-v1/indosum",
+  "data/instruction/full-id-v1/tasks/itqa",
+  "data/instruction/full-id-v1/tasks/amr-nli",
+  "data/instruction/full-id-v1/tasks/indo-ner",
+  "data/instruction/full-id-v1/tasks/bloom",
+  "data/instruction/full-id-v1/tasks/eos",
+  "data/instruction/full-id-v1/tasks/stem",
+  "data/instruction/full-id-v1/tasks/non-stem"
+]
+derive_validation = ["data/instruction/full-id-v1/tasks/itqa", "data/instruction/full-id-v1/tasks/non-stem"]
